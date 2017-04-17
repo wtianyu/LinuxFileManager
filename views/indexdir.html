@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>磁盘选择文件下载</title>
+    <link rel='stylesheet' href='/stylesheets/style.css'/>
+</head>
+
+<style type="text/css">
+    *{margin:0;padding:0;}
+    .alldom{width:100%;height:100%;}
+    ul{padding:0;list-style:none;}
+    ul li{overflow:hidden;width:100px;height:115px;float:left;margin-left:55px;background:url(/images/folder.png) center top no-repeat;border:1px solid #fff;position:relative;transition:all 0.2s ease-in 0.1s;}
+    a{overflow:hidden;width:100px;height:115px;float:left;margin-left:55px;border:1px solid #fff;position:relative;transition:all 0.2s ease-in 0.1s;}
+    a{position:absolute;border-radius:0px;left:-25px;bottom:10px;overflow:hidden;width:98px;height:20px;color:#595c5f;line-height:20px;text-align:center;font-size:12px;z-index:0;border:none;}
+    a{width:100px;height:24px;line-height:20px;text-align:center;background:none;border:1px solid #CCC;border-radius:8px;transition:all 0.2s ease-in 0.1s;margin-left:25px;}
+</style>
+<body>
+<div  class="alldom">
+    <ul>
+	<li><a href="http://<%= dataip %>/filelist?path=/home">/home</a></li>
+	<li><a href="http://<%= dataip %>/filelist?path=/etc">/etc</a></li>
+	<li><a href="http://<%= dataip %>/filelist?path=/dev">/dev</a></li>
+	<li><a href="http://<%= dataip %>/filelist?path=/boot">/boot</a></li>
+	<li><a href="http://<%= dataip %>/filelist?path=/bin">/bin</a></li>
+        <li><a href="http://<%= dataip %>/filelist?path=/var">/var</a></li>
+        <li><a href="http://<%= dataip %>/filelist?path=/usr">/usr</a></li>
+        <li><a href="http://<%= dataip %>/filelist?path=/tmp">/tmp</a></li>
+        <li><a href="http://<%= dataip %>/filelist?path=/sys">/sys</a></li>
+	<li><a href="http://<%= dataip %>/filelist?path=/srv">/srv</a></li>
+        <li><a href="http://<%= dataip %>/filelist?path=/selinux">/selinux</a></li>
+        <li><a href="http://<%= dataip %>/filelist?path=/sbin">/sbin</a></li>
+        <li><a href="http://<%= dataip %>/filelist?path=/run">/run</a></li>
+	<li><a href="http://<%= dataip %>/filelist?path=/root">/root</a></li>
+        <li><a href="http://<%= dataip %>/filelist?path=/proc">/proc</a></li>
+        <li><a href="http://<%= dataip %>/filelist?path=/opt">/opt</a></li>
+        <li><a href="http://<%= dataip %>/filelist?path=/mnt">/mnt</a></li>
+	<li><a href="http://<%= dataip %>/filelist?path=/media">/media</a></li>
+        <li><a href="http://<%= dataip %>/filelist?path=/lost+found">/lost+found</a></li>
+        <li><a href="http://<%= dataip %>/filelist?path=/lib64">/lib64</a></li>
+        <li><a href="http://<%= dataip %>/filelist?path=/lib32">/lib32</a></li>
+	<li><a href="http://<%= dataip %>/filelist?path=/lib">/lib</a></li>
+    </ul>
+    </div>
+</body>
+</html>

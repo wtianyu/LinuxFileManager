@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><%= dataip %></title>
+
+    <link rel='stylesheet' href='/stylesheets/style.css'/>
+    <link rel='stylesheet' href='/stylesheets/load.css'/>
+    <link rel='stylesheet' href='/stylesheets/jquery-ui-1.9.2.custom.css'/>
+    <link rel='stylesheet' href='/stylesheets/zTreeStyle.css'/>
+    <script type="text/javascript" src="/javascripts/jquery-1.8.3.js"></script>
+    <script type="text/javascript" src="/javascripts/progress_prefixfree.min.js"></script>
+    <script type="text/javascript" src="/javascripts/jquery-ui-1.9.2.custom.js"></script>
+    <script type="text/javascript" src="/javascripts/jquery-smartMenu.js"></script>
+    <script type="text/javascript" src="/javascripts/jquery.ztree.core.js"></script>
+</head>
+<style type="text/css">
+    *{margin:0;padding:0;}
+    .alldom{width:100%;height:100%;}
+    div ul.ul{padding:0;list-style:none;}
+    div ul li.folder{overflow:hidden;width:100px;height:115px;float:left;margin-left:55px;background:url(/images/folder.png) center top no-repeat;border:1px solid #fff;position:relative;transition:all 0.2s ease-in 0.1s;}
+    div ul li.file{overflow:hidden;width:100px;height:115px;float:left;margin-left:55px;background:url(/images/file.png) center top no-repeat;border:1px solid #fff;position:relative;transition:all 0.2s ease-in 0.1s;}
+    div ul.ul li a{overflow:hidden;width:100px;height:115px;float:left;margin-left:55px;border:1px solid #fff;position:relative;transition:all 0.2s ease-in 0.1s;}
+    div ul.ul li a.folder{position:absolute;border-radius:0px;left:-25px;bottom:10px;overflow:hidden;width:98px;height:20px;color:#595c5f;line-height:20px;text-align:center;font-size:12px;z-index:0;border:none;}
+    div ul.ul li a{width:100px;height:24px;line-height:20px;text-align:center;background:none;border:1px solid #CCC;border-radius:8px;transition:all 0.2s ease-in 0.1s;margin-left:25px;}
+
+    .smart_menu_box{display:none; width:140px; position:absolute; z-index:201105;}
+    .smart_menu_body{padding:1px; border:1px solid #B8CBCB; background-color:#fff; -moz-box-shadow:2px 2px 5px #666; -webkit-box-shadow:2px 2px 5px #666; box-shadow:2px 2px 5px #666;}
+    .smart_menu_ul{margin:0; padding:0; list-style-type:none;}
+    .smart_menu_li{position:relative;}
+    .smart_menu_a{display:block; height:25px; line-height:24px; padding:0 5px 0 25px; color:#000; font-size:12px; text-decoration:none; overflow:hidden;}
+    .smart_menu_a:hover, .smart_menu_a_hover{background-color:#348CCC; color:#fff; text-decoration:none;}
+    .smart_menu_li_separate{line-height:0; margin:3px; border-bottom:1px solid #B8CBCB; font-size:0;}
+    .smart_menu_triangle{width:0; height:0; border:5px dashed transparent; border-left:5px solid #666; overflow:hidden; position:absolute; top:7px; right:5px;}
+    .smart_menu_a:hover .smart_menu_triangle, .smart_menu_a_hover .smart_menu_triangle{border-left-color:#fff;}
+    .smart_menu_li_hover .smart_menu_box{top:-1px; left:130px;}
+</style>
+<script>
+    $(function(){
+        $("input[type=file]").change(function(){
+            document.getElementById("progressNumber").value="0";
+            document.getElementById("progressNumber").style.display="none";
+            document.getElementById("download").innerHTML="";
+            var file = document.getElementById('uploadFile').files[0];
+            console.log(file);
+            if (file) {
+                var fileSize = 0;
+                if (file.size > 1024 * 1024)
+                    fileSize = (Math.round(file.size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
+                else
+                    fileSize = (Math.round(file.size * 100 / 1024) / 100).toString() + 'KB';
+                document.getElementById('fileName').innerHTML = 'Name: ' + file.name;
+                document.getElementById('fileSize').innerHTML = 'Size: ' + fileSize;
+                document.getElementById('fileType').innerHTML = 'Type: ' + file.type;
+            }
+
+        });
+        $("input[type=file]").each(function(){
+            if($(this).val()==""){
+                $(this).parents(".uploader").find(".filename").val("请选择文件...");
+            }
+        });
+
+    });
+</script>
+<body>
+<!--文件夹显示效果-->
+<div  class="alldom" id="folderDiv">
+    <ul class="ul" >
+        <%for(var i=0; i<= dirlist.length-1; i++){%>
+        <li class="folder" title="<%= dirnamelist[i] %>"  onmouseover="mouserover('<%= dirnamelist[i] %>')" style="cursor: pointer"><a title="<%= dirnamelist[i] %>"  href="javascript:void(0)" onclick="go('<%= dirnamelist[i] %>')" class="folder"><%= dirnamelist[i] %></a></li>
+        <!--<a href="http://<%= dataip %>/filelist?path=<%= dirlist[i] %>"><%= dirlist[i] %></a><br/>-->
+        <%}%>
+    </ul>
+</div>
+
+
+<!--文件显示效果-->
+<div  class="alldom" id="fileDiv">
+    <ul class="ul">
+        <%for(var i=0; i<= filelist.length-1; i++){%>
+        <!--<input type="button" value=<%= filelist[i]%>>-->
+        <li class="file" title="<%= filenamelist[i] %>"  onmouseover="mouserover('<%= filenamelist[i] %>')" style="cursor: pointer"><a title="<%= filenamelist[i] %>" href="javascript:void(0)" onclick="downl('<%= filenamelist[i] %>')" class="folder"><%= filenamelist[i] %></a></li>
+        <!--<a href="http://<%= dataip %>/filedownload?path=<%= filelist[i] %>"><%= filelist[i] %></a><br/>-->
+        <%}%>
+    </ul>
+</div>
+
+<!--文件上传dialog-->
+<div id="uploadDialog" title="文件上传" class="uploader" style="padding-left: 20px;display: none">
+    <form  id="upload_submitForm" action="uploadFile" method="post" enctype='multipart/form-data'>
+        <input type="file" id="uploadFile" name="uploadFile" value="上传文件"  ><br/>
+        <p id="fileName"></p>
+        <p id="fileSize"></p>
+        <p id="fileType"></p>
+        <progress id="progressNumber" value="0" max="100" style="display: none"></progress>
+        <div hidden id="progressSpeed"></div>
+        <div id="download" ></div>
+        <input type="hidden" name="dirpath" id="dirpath">
+        <input type="button" style="margin-top: 10px" id="uploadFileBtn" onclick="validate()" value=" 上传文件 ">
+    </form>
+</div>
+
+<!-- shell命令使用-->
+<div id="shellDialog" title="系统内存使用情况" style="display: none">
+    <div class="spinner" id="spinner">
+        <div class="rect1"></div>
+        <div class="rect2"></div>
+        <div class="rect3"></div>
+        <div class="rect4"></div>
+        <div class="rect5"></div>
+    </div>
+    <div id="shellContent"></div>
+</div>
+
+<!-- 选择文件目录dialog -->
+<div id="chooseFolderDialog" title="请选择移动目录" style="display: none">
+    <div>
+        <ul id="folderZtree" class="ztree"></ul>
+    </div>
+</div>
+
+<script>
+    var sourcePath;
+    var targetPath;
+    var filePath;
+    var doType;
+    var reloadPath = window.location.href;
+    var pathPre = window.location.href;
+    if(pathPre.indexOf("path=")>-1){
+        pathPre= pathPre.split("path=")[pathPre.split("path=").length-1];
+    }else{
+        pathPre="/";
+    }
+    document.getElementById("dirpath").value = decodeURI(pathPre);
+    var dataFolder = [
+        [{
+            text: "打开",
+            func: function() {
+                go(filePath);
+            }
+        }],
+        [{
+            text: "删除",
+            func: function() {
+                if(confirm("你确定要执行该删除操作吗？一旦执行，不可逆转")){
+                    doType = 1;
+                    sourcePath = pathPre+encodeURIComponent("/"+filePath);
+                    snedOperateShell("shellOperate?sourcePath="+sourcePath+"&doType="+doType);
+                }else{
+                    return false;
+                }
+            }
+        }],
+        [{
+            text: "移动",
+            func: function() {
+                doType = 2;
+                openFolderDialog();
+                sourcePath = pathPre+encodeURIComponent("/"+filePath);
+            }
+        }],
+        [{
+            text: "复制",
+            func: function() {
+                doType = 3;
+                openFolderDialog();
+                sourcePath = pathPre+encodeURIComponent("/"+filePath);
+            }
+        }],
+        [{
+            text: "重命名",
+            func: function() {
+                doType = 4;
+                sourcePath = pathPre+encodeURIComponent("/"+filePath);
+                var newName = prompt("请输入新文件名");
+                if($.trim(newName).length<1||$.trim(newName).indexOf(".")>-1||$.trim(newName).indexOf("/")>-1){
+                    alert("请输入合法文件名");
+                   return false;
+                }else{
+                    targetPath = pathPre+"/"+encodeURIComponent(newName);
+                    snedOperateShell("shellOperate?sourcePath="+sourcePath+"&targetPath="+targetPath+"&doType="+doType);
+                }
+            }
+        }],
+        [{
+            text: "zip压缩文件夹",
+            func: function() {
+                doType = 8;
+                sourcePath = pathPre+encodeURIComponent("/"+filePath);
+                snedOperateShell("shellOperate?sourcePath="+sourcePath+"&targetPath="+targetPath+"&doType="+doType);
+            }
+        }],
+        [{
+            text: "返回",
+            func: function() {
+            }
+        }]
+    ];
+    var dataFile = [
+        [{
+            text: "下载",
+            func: function() {
+                downl(filePath);
+            }
+        }],
+        [{
+            text: "删除",
+            func: function() {
+                if(confirm("你确定要执行该删除操作吗？一旦执行，不可逆转")){
+                    doType = 1;
+                    sourcePath = pathPre+encodeURIComponent("/"+filePath);
+                    snedOperateShell("shellOperate?sourcePath="+sourcePath+"&doType="+doType);
+                }else{
+                    return false;
+                }
+            }
+        }],
+        [{
+            text: "移动",
+            func: function() {
+                doType = 2;
+                openFolderDialog();
+                sourcePath = pathPre+encodeURIComponent("/"+filePath);
+            }
+        }],
+        [{
+            text: "复制",
+            func: function() {
+                doType = 3;
+                openFolderDialog();
+                sourcePath = pathPre+encodeURIComponent("/"+filePath);
+            }
+        }],
+        [{
+            text: "重命名",
+            func: function() {
+                doType = 4;
+                sourcePath = pathPre+encodeURIComponent("/"+filePath);
+                var newName = prompt("请输入新文件名");
+                if($.trim(newName).length<1||$.trim(newName).indexOf("/")>-1){
+                    alert("请输入合法文件名");
+                    return false;
+                }else{
+                    targetPath = pathPre+"/"+encodeURIComponent(newName);
+                    snedOperateShell("shellOperate?sourcePath="+sourcePath+"&targetPath="+targetPath+"&doType="+doType);
+                }
+            }
+        }],
+        [{
+            text: "zip解压",
+            func: function() {
+                doType = 7;
+                alert(filePath);
+                sourcePath = pathPre+encodeURIComponent("/"+filePath);
+                snedOperateShell("shellOperate?sourcePath="+sourcePath+"&targetPath="+targetPath+"&doType="+doType);
+            }
+        }],
+        [{
+            text: "返回",
+            func: function() {
+            }
+        }]
+    ];
+    var dataHtml= [
+        [{
+            text: "上传",
+            func: function() {
+                openUploadDialog();
+            }
+        }],
+        [{
+            text: "刷新",
+            func: function() {
+                window.location.href = reloadPath;
+            }
+        }],
+        [{
+            text: "新建文件",
+            func: function() {
+                doType = 5;
+                var newName = prompt("请输入文件名");
+                if($.trim(newName).length<1||$.trim(newName).indexOf("/")>-1){
+                    alert("请输入合法文件名");
+                    return false;
+                }else{
+                    targetPath = pathPre+"/"+encodeURIComponent(newName);
+                    snedOperateShell("shellOperate?sourcePath="+sourcePath+"&targetPath="+targetPath+"&doType="+doType);
+                }
+            }
+        }],
+        [{
+            text: "新建文件夹",
+            func: function() {
+                doType = 6;
+                var newName = prompt("请输入新文件夹名");
+                if($.trim(newName).length<1||$.trim(newName).indexOf(".")>-1||$.trim(newName).indexOf("/")>-1){
+                    alert("请输入合法文件夹名");
+                    return false;
+                }else{
+                    targetPath = pathPre+"/"+encodeURIComponent(newName);
+                    snedOperateShell("shellOperate?sourcePath="+sourcePath+"&targetPath="+targetPath+"&doType="+doType);
+                }
+            }
+        }],
+        [{
+            text: "内存使用情况",
+            func: function() {
+                openShellDialog();
+                var xr = new XMLHttpRequest();
+                xr.open("GET","shellMemCondition");
+                xr.onreadystatechange=function(){
+                    if(xr.readyState==4){
+                        if(xr.status==200){
+                            document.getElementById("shellContent").innerText=xr.responseText;
+                            document.getElementById("spinner").style.display="none";
+                        }
+                    }
+                }
+                xr.send(null);
+            }
+        }],
+        [{
+            text: "返回",
+            func: function() {
+            }
+        }]
+    ];
+    var optionFile = {
+        name: "menu1",
+        offsetX: 0
+    };
+    var optionFolder = {
+        name: "menu2",
+        offsetX: 0
+    };
+    var optionHtml = {
+        name: "menu3",
+        offsetX: 0
+    };
+    $("#fileDiv").attr("cursor","pointer");
+    $("#fileDiv").smartMenu(dataFile, optionFile);
+    $("#folderDiv").attr("cursor","pointer");
+    $("#folderDiv").smartMenu(dataFolder, optionFolder);
+    $("html").smartMenu(dataHtml, optionHtml);
+
+    function mouserover(path){
+        filePath = path;
+    }
+
+    function downl(path){
+        window.location.href="http://<%= dataip %>/filedownload?path="+pathPre+encodeURIComponent("/"+path);
+    }
+
+    function go(path){
+        window.location.href="http://<%= dataip %>/filelist?path="+pathPre+encodeURIComponent("/"+path);
+    }
+
+    /**
+     * 完美实现字符全部替换功能
+     * @param str
+     * @param sptr1
+     * @param sptr2
+     * @returns {string}
+     */
+    function replaceAll(str, sptr1, sptr2){
+        var strTemp = "";
+        var flag = 0;
+        var length = 0;
+        var begin = 0;
+        if(str.indexOf(sptr1,flag+length)==-1){
+            return str;
+        }
+        while ((flag = str.indexOf(sptr1,flag+length)) > -1){
+            strTemp += str.substring(begin,flag)+sptr2;
+            length = sptr2.length;
+            begin = flag+sptr1.length;
+        }
+        if(length!=0){//进行过截断
+            strTemp += str.substring(begin,str.length);
+        }
+        return strTemp;
+    }
+
+    $( "#uploadDialog" ).dialog({
+        autoOpen: false,
+        width: 400,
+        height: screen.height/2,
+        buttons: [
+            {
+                text: "关闭",
+                click: function() {
+                    document.getElementById("upload_submitForm").reset();
+                    document.getElementById("fileName").innerHTML = "";
+                    document.getElementById("fileSize").innerHTML = "";
+                    document.getElementById("fileType").innerHTML = "";
+                    $(this).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+    $( "#shellDialog" ).dialog({
+        autoOpen: false,
+        width: 400,
+        height: screen.height/2,
+        buttons: [
+            {
+                text: "关闭",
+                click: function() {
+                    document.getElementById("shellContent").innerText="";
+                    $(this).dialog( "close" );
+                }
+            }
+        ]
+    });
+
+
+    $("#chooseFolderDialog").dialog({
+        autoOpen: false,
+        width: 300,
+        height: screen.height*3/5,
+        buttons: [{
+            text: "关闭",
+            click: function() {
+                $(this).dialog("close");
+            }
+        },
+            {
+                text: "确定",
+                click: function() {//确定
+                    snedOperateShell("shellOperate?sourcePath="+sourcePath+"&targetPath="+targetPath+"&doType="+doType);
+                }
+            }
+        ]
+    });
+
+    function snedOperateShell(url){
+        //向服务器发送移动命令
+        var xr = new XMLHttpRequest();
+        xr.open("GET",url);
+        xr.onreadystatechange=function(){
+            if(xr.readyState==4){
+                if(xr.status==200){
+                    alert(xr.responseText);
+                    window.location.href = reloadPath;
+                }
+            }
+        }
+        xr.send(null);
+    }
+
+    function openFolderDialog() {
+        $("#chooseFolderDialog").dialog("open");
+        //请求显示文件系统所有目录
+        var xr = new XMLHttpRequest();
+        xr.open("GET","getFolderAll?path="+pathPre);
+        xr.onreadystatechange=function(){
+            if(xr.readyState==4){
+                if(xr.status==200){
+                    initZtree(xr.responseText);
+                }
+            }
+        }
+        xr.send(null);
+    }
+
+
+    function openUploadDialog(){
+        $( "#uploadDialog" ).dialog( "open" );
+    }
+
+    function openShellDialog(){
+        document.getElementById("spinner").style.display="";
+        $( "#shellDialog" ).dialog( "open" );
+    }
+
+
+    //上传文件配置
+    function validate() {
+        try{
+            var obj_file = document.getElementById("uploadFile");
+            if(obj_file.value==""){
+                alert("请先选择上传文件");
+                return;
+            }
+//            document.getElementById("upload_submitForm").submit();
+//            return false;
+            var fd = new FormData();
+            fd.append("uploadFile", document.getElementById('uploadFile').files[0]);
+            fd.append("fileName", document.getElementById('uploadFile').files[0].name);
+            fd.append("dirpath", document.getElementById('dirpath').value);
+            var xhr = new XMLHttpRequest();
+            xhr.upload.addEventListener("progress", uploadProgress, false);
+            xhr.addEventListener("load", uploadComplete, false);
+            xhr.addEventListener("error", uploadFailed, false);
+            xhr.addEventListener("abort", uploadCanceled, false);
+            xhr.open("POST", "uploadFile");//修改成自己的接口
+            xhr.setRequestHeader("context-type","text/xml;charset=utf-8");
+            xhr.send(fd);
+        }catch(e){
+            alert(e);
+        }
+    }
+
+    function uploadProgress(evt) {
+        if (evt.lengthComputable) {
+            var percentComplete = evt.loaded * 100 / evt.total;
+            document.getElementById('progressNumber').style.display="";
+            document.getElementById('progressNumber').value = percentComplete;
+        }
+        else {
+            document.getElementById('progressNumber').innerHTML = 'unable to compute';
+        }
+    }
+    function uploadComplete(evt) {
+        /* 服务器端返回响应时候触发event事件*/
+        document.getElementById('progressNumber').value = 100;
+        document.getElementById('download').innerHTML="上传成功,你可以继续上传文件";
+        document.getElementById("upload_submitForm").reset();
+        document.getElementById("fileName").innerHTML = "";
+        document.getElementById("fileSize").innerHTML = "";
+        document.getElementById("fileType").innerHTML = "";
+    }
+    function uploadFailed(evt) {
+        alert("上传文件失败");
+    }
+    function uploadCanceled(evt) {
+        alert("取消上传文件");
+    }
+    //initZtree();
+    var setting;
+    function initZtree(json){
+        var zTreeObj;
+        setting = {
+            callback: {
+                onClick: clicTree,
+                onCollapse:onCollapse,
+                onExpand:onExpand
+            },
+            data : {
+                simpleData : {
+                    enable : true,
+                    idKey: "id",
+                    pIdKey: "pId",
+                    rootPId: 0
+                },
+            }
+        };
+        var zNodes =JSON.parse(json);
+        zTreeObj = $.fn.zTree.init($("#folderZtree"), setting, zNodes);
+        var treeObj = $.fn.zTree.getZTreeObj("folderZtree");
+        pathPre = replaceAll(pathPre ,"%2F","/");
+        pathPre = replaceAll(pathPre ,"//","/");
+        console.log(decodeURI(pathPre));
+        var node = treeObj.getNodeByParam("id", decodeURI(pathPre));
+        treeObj.selectNode(node);
+        treeObj.expandNode(node, true, false);//指定选中ID节点展开
+        console.log(node);
+    }
+    function clicTree(event, treeId, treeNode) {
+        targetPath = treeNode.id;
+        console.log(treeNode);
+    }
+
+    function onCollapse(){
+
+    }
+
+    function onExpand(event, treeId, treeNode){
+        addNode(treeNode);
+    }
+
+    function addNode(treeNode) {
+        //动态加载子节点
+        var xr = new XMLHttpRequest();
+        xr.open("GET","getFolderNodes?path="+encodeURIComponent(treeNode.id));
+        xr.onreadystatechange=function(){
+            if(xr.readyState==4){
+                if(xr.status==200){
+                    if(xr.responseText.length>0){
+                        var treeObj = $.fn.zTree.getZTreeObj("folderZtree");
+                        treeObj.expandNode(treeNode, false, false);//指定选中ID节点展开
+                        treeObj.addNodes(treeNode,JSON.parse(xr.responseText));
+                        treeObj.expandNode(treeNode, true, false);//指定选中ID节点展开
+                    }
+                }
+            }
+        }
+        xr.send(null);
+    }
+
+</script>
+</body>
+</html>
