@@ -1,0 +1,27 @@
+/* common */
+*{margin:0;padding:0;font-size:12px;}
+input,button,select,textarea{outline:none;}
+ul,li,dl,ol{list-style:none;}
+iframe,img{border:none;}
+textarea{resize:none}
+body{color:#333; font-family:'Microsoft YaHei',Arial;}
+h1, h2, p, ul, dl, div{text-align:left; font-weight:normal;}
+input[type="submit"],input[type="button"] {cursor:pointer;}
+input{cursor:expression(this.type=="button"||this.type=="submit"||this.type=="radio"||this.type=="checkbox" ? "pointer" :"text"); }/* IE6 */
+
+*+html img {margin-bottom:0!important;} /* Fix IE7 */
+html>body img {margin-bottom:-3px;}  /* Fix FireFox */
+@media all and (min-width:0px){img {margin-bottom:-2px!important;}}  /*Fix Opera */
+
+p,div,span,em,i,b,s,ul,li,dl,dt,dd,td{ word-wrap:break-word; word-break:break-all; vertical-align:top;}
+th,i,b,s{ font-style:normal; font-weight:normal; text-decoration:none;}
+div,p{ text-align:center; line-height:30px;}
+/* CSS Document */
+.infopic{ width:700px; height:200px; position:relative; overflow:hidden; margin:15px auto;}
+.piclist{ height:200px; position:absolute; top:0; left:0;}
+.piclist li{ height:200px; margin-right:15px; float:left; overflow:hidden;}
+.piclist li img{ height:200px;}
+
+.pic_prev,.pic_next{ width:30px; height:50px; background:url(../images/icon.png) no-repeat; position:absolute; top:75px; cursor:pointer;}
+.pic_prev{ background-position:0 0; left:0;}
+.pic_next{ background-position:0 -60px; right:0;}
