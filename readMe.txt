@@ -22,3 +22,9 @@ version 2.1
 time 2017/6/16
 author wy
 添加功能：图片显示方式改变[原先当做普通文件显示。现在显示图片，点击或者预览图片可以实现prettyPhoto效果]
+
+5.项目功能添加
+version 2.1
+time 2017/6/16
+author wy
+添加功能：实现了文件拖拽上传
