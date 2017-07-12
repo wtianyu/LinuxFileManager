@@ -1,6 +1,6 @@
 var child_process = require('child_process');
 var iconv = require('iconv-lite');
-var encoding = 'cp936';
+var encoding = 'utf-8';//'cp936';
 var binaryEncoding = 'binary';
 var shellData;
 var callBack = function(){};
