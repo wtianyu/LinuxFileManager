@@ -280,8 +280,8 @@
             <ul id="folderZtree" class="ztree"></ul>
         </div>
     </div>
-    <!-- 搜素文件dialog -->
-    <div id="searchDialog" title="请输入要搜素的文件或内容" style="display: none">
+    <!-- 搜索文件dialog -->
+    <div id="searchDialog" title="请输入要搜索的文件或内容" style="display: none">
         <div class="spinner" id="spinnerSearch">
             <div class="rect1"></div>
             <div class="rect2"></div>
@@ -295,8 +295,8 @@
             <option value="2">按文件内容</option>
         </select>
             <select style="width:48%" id="searchRange">
-            <option value="1">全局搜素</option>
-            <option value="2">当前目录下搜素</option>
+            <option value="1">全局搜索</option>
+            <option value="2">当前目录下搜索</option>
         </select>
             <input id="searchNameIP" style="width:96%;margin-top:8px" />
             <textarea id="searchNameTT" rows="5" style="display:none;width:96%;margin-top:8px"></textarea>
@@ -518,7 +518,7 @@
                 }
             }],
             [{
-                text: "搜素",
+                text: "搜索",
                 func: function() {
                     openSearchDialog();
                 }
