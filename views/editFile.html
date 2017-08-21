@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:mudoo>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script language="javascript" src="http://www.cy.wtianyu.com/js/jquery-3.2.1.js"></script>
+    <link href="/stylesheets/index_q_a.css" rel="stylesheet">
+    <title>编辑文件</title>
+    <script language="javascript" src="http://www.cy.wtianyu.com/js/jquery.form.js"></script>
+    <!--代码高亮-->
+    <!--<script type="text/javascript" src="/syntaxhighlighter-scripts/shCore.js"></script>
+    <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushBash.js"></script>
+    <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushCss.js"></script>
+    <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushCSharp.js"></script>
+    <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushJScript.js"></script>
+    <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushPhp.js"></script>
+    <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushPlain.js"></script>
+    <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushPython.js"></script>
+    <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushJava.js"></script>
+    <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushScala.js"></script>
+    <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushSql.js"></script>
+    <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushXml.js"></script>
+    <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushPerl.js"></script>
+    <link type="text/css" rel="stylesheet" href="/syntaxhighlighter-styles/shCore.css" />
+    <link type="text/css" rel="stylesheet" href="/syntaxhighlighter-styles/shThemeDefault.css" />-->
+
+</head>
+
+<body>
+    <div class="case">
+        <form action="/saveFileHtml" method="post" id="saveFileHtmlForm">
+            <input type="hidden" name="filepath" id="filepath" value="<%=filepath%>">
+            <div class="title" style="height:32px;font-size:16px;margin-bottom: 0.5em;"><img class="r" style="cursor:pointer;" onclick="closeEditHtml()" src="/images/close_file.png"><img class="r" style="cursor:pointer;" onclick="submitBtn()" src="/images/save_file.png">文件内容<span id="isSave" style="color:#FF83FA;font-size:12px;"><span></div>
+            <!--<div id="div_show" style="min-width:98%;min-height:500px;border:solid 1px #DBDBDB;" contenteditable="true">
+            </div>-->
+            <textarea id="data_textArea" onkeyup="isNoSave()" name="data_textArea" style="min-width:98%;min-height:500px;border:solid 1px #DBDBDB;margin-top:10px;"></textarea>
+        </form>
+    </div>
+</body>
+<script>
+    //高亮模式初始化
+    // initSyntaxHighlighter();
+    //异步读取文件内容
+    showHtml();
+
+    function isNoSave(){
+        $("#isSave").text("[未保存]");
+    }
+
+    function closeEditHtml(){
+        if($("#isSave").text()=="[未保存]"){
+            if(confirm("文件尚未保存，你确定要关闭窗口吗")){
+                window.close();
+            }
+        }else{
+             window.close();
+        }
+    }
+
+    function showHtml() {
+        $.ajax({
+            url: '/fileViewHtml?filepath=' + encodeURIComponent("<%=filepath%>"),
+            type: 'GET',
+            dataType: 'html',
+            success: function(data) {
+                $("#data_textArea").html(data);
+            },
+            error: function(data) {
+                alert("服务器繁忙，请稍后再试!!!")
+            }
+        });
+    }
+
+    //保存文件
+    function submitBtn() {
+        $("#data").val($("#data_pre"))
+        var ajax_option = {
+            dataType: 'html',
+            type: 'POST',
+            success: function(data) {
+                if (data == "1") {
+                    $("#isSave").text("[已保存]");
+                } else {
+                    alert("保存失败!!!");
+                }
+            },
+            error: function(text) {
+                alert("服务器繁忙，请稍后再试！");
+            }
+        }
+        $("#saveFileHtmlForm").ajaxSubmit(ajax_option);
+    }
+
+    function initSyntaxHighlighter() {
+        SyntaxHighlighter.defaults['toolbar'] = false; //去掉右上角问号图标
+        SyntaxHighlighter.config.tagName = 'pre'; //可以更改解析的默认Tag。
+        SyntaxHighlighter.config.bloggerMode = true;
+        SyntaxHighlighter.config.stripBrs = true;
+        SyntaxHighlighter.defaults['collapse'] = false;
+        SyntaxHighlighter.gutter = false;
+        SyntaxHighlighter.config.stripBrs = true;
+        SyntaxHighlighter.all();
+    }
+</script>
+
+</html>

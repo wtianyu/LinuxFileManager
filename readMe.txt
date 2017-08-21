@@ -28,3 +28,9 @@ version 2.1
 time 2017/6/16
 author wy
 添加功能：实现了文件拖拽上传
+
+6.项目功能添加
+version 2.1
+time 2017/8/21
+author wy
+添加功能：实现了文件的在线编辑

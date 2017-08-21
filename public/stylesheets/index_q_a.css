@@ -1,0 +1,192 @@
+body {
+    margin: 3em;
+    font: 12px Tahoma;
+    background: #EAEAEA;
+    color: #333333;
+    line-height: 20px
+}
+
+input,
+textarea {
+    font: 12px Tahoma;
+    color: #666666;
+    padding: 2px;
+    border: solid 1px #DBDBDB
+}
+
+textarea {
+    padding: 5px;
+    line-height: 20px
+}
+
+p {
+    margin: 1em 0
+}
+
+ul {}
+
+li {
+    height: 1%;
+    overflow: hidden;
+    list-style-type: none
+}
+
+a {
+    color: #666666;
+    text-decoration: none
+}
+
+a:hover {
+    color: #333333
+}
+
+.r {
+    float: right
+}
+
+.l {
+    float: left
+}
+
+.b {
+    font-weight: bold
+}
+
+.gray {
+    color: #666666;
+    margin-top: 8px
+}
+
+.light {
+    color: #FF6600;
+    margin: 0 5px
+}
+
+.case {
+    display: block;
+    padding: 0 2em 2em 2em;
+    border: solid 1px #EAEAEA;
+    background: #FFFFFF;
+    margin-bottom: 2em;
+    height: 1%;
+    overflow: hidden
+}
+
+.title {
+    display: block;
+    padding: .5em 2em .5em 1em;
+    margin: 0 -2em 2em -2em;
+    font-weight: bold;
+    color: #000000;
+    background: #FAFAFA;
+    border-bottom: solid 1px #EAEAEA
+}
+
+.call {
+    display: block;
+}
+
+.key {
+    display: block;
+    width: 6em;
+    float: left
+}
+
+.type {
+    display: block;
+    width: 6em;
+    float: left
+}
+
+.info {
+    padding-left: 2em
+}
+
+.demo {
+    margin-bottom: 2em;
+}
+
+
+/* popHint Style */
+
+#popHint {
+    position: absolute;
+    line-height: normal
+}
+
+#popHint .popLeft,
+#popHint .popRight,
+#popHint .popAngle span,
+#popHintText,
+#popHint .popIcon {
+    background-image: url(http://i.namipan.com/files/48ee6e2804bb4b1d84ecea96218e4a50081349ba960100008f09/0/PopHint.gif)
+}
+
+#popHint .popHeader {
+    height: 1%;
+    overflow: hidden !important;
+    overflow/**/
+    : visible
+}
+
+#popHint .popLeft {
+    float: left;
+    width: 5px;
+    height: 24px;
+    background-position: 0 0;
+    background-repeat: no-repeat
+}
+
+#popHint .popRight {
+    float: left;
+    width: 5px;
+    height: 24px;
+    background-position: -10px -25px;
+    background-repeat: no-repeat
+}
+
+#popHint .popAngle {
+    clear: both;
+    position: relative;
+    height: 10px
+}
+
+#popHint .popAngle span {
+    position: absolute;
+    top: -3px;
+    left: 15px;
+    width: 7px;
+    height: 13px;
+    background-position: 0 -75px;
+    background-repeat: no-repeat
+}
+
+#popHintText {
+    float: left;
+    color: #975400;
+    height: 19px !important;
+    height/**/
+    : 24px;
+    padding: 5px 0 0 0;
+    white-space: nowrap;
+    background-position: 0 -50px;
+    background-repeat: repeat-x;
+    overflow: hidden
+}
+
+#popHintText .popIcon {
+    float: left;
+    width: 15px;
+    height: 10px;
+    margin: 1px 3px 0 0
+}
+
+#popHint .wrong {
+    background-position: 0 -90px;
+    background-repeat: no-repeat
+}
+
+#popHint .right {
+    background-position: 0 -105px;
+    background-repeat: no-repeat
+}

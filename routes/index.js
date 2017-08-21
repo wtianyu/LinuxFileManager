@@ -12,6 +12,8 @@ router.get('/', function(req, res, next) {
     res.render('test', { title: 'Express' });
 });
 
+router.get('/favicon.ico', function(req, res, next) {});
+
 router.get('/wtiy', function(req, res, next) {
     reqIp = getIPAdress() + ":3010";
     console.log("请连接本机ip：", reqIp);
@@ -25,12 +27,30 @@ router.get('/filedownload', function(req, res, next) {
     downloadFile(filepath, res, req);
 });
 
-//预览文件
 router.get('/fileView', function(req, res, next) {
     saveLog(req);
-    // res.charset = 'utf-8';
-    res.setHeader('Content-Type', 'text/javascript;charset=UTF-8');
     var filepath = req.query.path;
+    res.render('editFile', { filepath: filepath });
+});
+
+router.post('/saveFileHtml', function(req, res, next) {
+    saveLog(req);
+    var filepath = req.body.filepath;
+    var data = req.body.data_textArea;
+    try {
+        fs.writeFileSync(filepath, data);
+        res.end("1");
+    } catch (err) {
+        log(err);
+        res.end("0");
+    }
+});
+
+//预览文件
+router.get('/fileViewHtml', function(req, res, next) {
+    saveLog(req);
+    var filepath = req.query.filepath;
+    console.log(filepath);
     var data = fs.readFileSync(filepath, 'utf8');
     console.log(data.length);
     if (data.length > 1024 * 1024 * 10) {
