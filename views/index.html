@@ -3,7 +3,7 @@
 
 <head>
     <title>linux文件管理系统</title>
-
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <link rel='stylesheet' href='/stylesheets/style.css' />
     <link rel='stylesheet' href='/stylesheets/load.css' />
     <link rel='stylesheet' href='/stylesheets/jquery-ui-1.9.2.custom.css' />
@@ -13,7 +13,6 @@
     <script type="text/javascript" src="/javascripts/jquery-ui-1.9.2.custom.js"></script>
     <script type="text/javascript" src="/javascripts/jquery-smartMenu.js"></script>
     <script type="text/javascript" src="/javascripts/jquery.ztree.core.js"></script>
-
     <link type="text/css" href="/stylesheets/prettyPhoto.css" rel="stylesheet" />
     <script type="text/javascript" src="/javascripts/jquery.prettyphoto.js"></script>
 </head>
@@ -169,7 +168,6 @@
     }
 </style>
 <script>
-    var passwd = "gb%uFFFE.J%60%000Hg%07%3EK";
     $(function() {
         $("input[type=file]").change(function() {
             document.getElementById("progressNumber").value = "0";
@@ -194,7 +192,6 @@
                 $(this).parents(".uploader").find(".filename").val("请选择文件...");
             }
         });
-
     });
 </script>
 
@@ -229,7 +226,7 @@
                     </li>
                     <%}else{%>
                         <li class="file" title="<%= filenamelist[i] %>" onmouseover="mouserover('<%= filenamelist[i] %>')">
-                            <a title="<%= filenamelist[i] %>" style="cursor: pointer" href="javascript:void(0)" onclick="downl('<%= filenamelist[i] %>')" class="folder">
+                            <a name="file_a" title="<%= filenamelist[i] %>" style="cursor: pointer" href="javascript:void(0)" onclick="downl('<%= filenamelist[i] %>')" class="folder">
                                 <%= filenamelist[i] %>
                             </a>
                         </li>
@@ -242,8 +239,8 @@
     <div id="uploadDialog" title="文件上传" class="uploader" style="padding-left: 20px;display: none">
         <form id="upload_submitForm" action="uploadFile" method="post" enctype='multipart/form-data'>
             <input type="file" id="uploadFile" name="uploadFile" value="上传文件"><br/>
-             <p id="filedesc"></p>
-			<p id="fileName"></p>
+            <p id="filedesc"></p>
+            <p id="fileName"></p>
             <p id="fileSize"></p>
             <p id="fileType"></p>
             <progress id="progressNumber" value="0" max="100" style="display: none"></progress>
@@ -303,324 +300,8 @@
         </div>
     </div>
 
+    <script type="text/javascript" src="/javascripts/index_main.js"></script>
     <script>
-		var isDragUploadFile = false;//是否是拖拽上传文件
-        var sourcePath;
-        var targetPath;
-        var filePath;
-        var doType;
-        var reloadPath = window.location.href;
-        var pathPre = window.location.href;
-        if (pathPre.indexOf("path=") > -1) {
-            pathPre = pathPre.split("path=")[pathPre.split("path=").length - 1];
-        } else {
-            pathPre = "/";
-        }
-        document.getElementById("dirpath").value = decodeURIComponent(pathPre);
-        var dataFolder = [
-            [{
-                text: "打开",
-                func: function() {
-                    go(filePath);
-                }
-            }],
-            [{
-                text: "删除",
-                func: function() {
-                    if (confirm("你确定要执行该删除操作吗？一旦执行，不可逆转")) {
-                        doType = 1;
-                        sourcePath = pathPre + encodeURIComponent("/" + filePath);
-                        snedOperateShell("shellOperate?sourcePath=" + sourcePath + "&doType=" + doType);
-                    } else {
-                        return false;
-                    }
-                }
-            }],
-            [{
-                text: "移动",
-                func: function() {
-                    doType = 2;
-                    openFolderDialog();
-                    sourcePath = pathPre + encodeURIComponent("/" + filePath);
-                }
-            }],
-            [{
-                text: "复制",
-                func: function() {
-                    doType = 3;
-                    openFolderDialog();
-                    sourcePath = pathPre + encodeURIComponent("/" + filePath);
-                }
-            }],
-            [{
-                text: "重命名",
-                func: function() {
-                    doType = 4;
-                    sourcePath = pathPre + encodeURIComponent("/" + filePath);
-                    var newName = prompt("请输入新文件名");
-                    if ($.trim(newName).length < 1 || $.trim(newName).indexOf(".") > -1 || $.trim(newName).indexOf("/") > -1) {
-                        alert("请输入合法文件名");
-                        return false;
-                    } else {
-                        targetPath = pathPre + "/" + encodeURIComponent(newName);
-                        snedOperateShell("shellOperate?sourcePath=" + sourcePath + "&targetPath=" + targetPath + "&doType=" + doType);
-                    }
-                }
-            }],
-            [{
-                text: "zip压缩文件夹",
-                func: function() {
-                    doType = 8;
-                    sourcePath = pathPre + encodeURIComponent("/" + filePath);
-                    snedOperateShell("shellOperate?sourcePath=" + sourcePath + "&targetPath=" + targetPath + "&doType=" + doType);
-                }
-            }],
-            [{
-                text: "取消",
-                func: function() {}
-            }]
-        ];
-        var dataFile = [
-            [{
-                text: "预览",
-                func: function() {
-                    if (isCanOpen(filePath)) {
-                        preView(filePath);
-                    } else if (isImg(filePath)) {
-                        document.getElementById(filePath).click()
-                    } else {
-                        alert("该文件类型不能进行预览!!!");
-                    }
-                }
-            }],
-            [{
-                text: "下载",
-                func: function() {
-                    downl(filePath);
-                }
-            }],
-            [{
-                text: "删除",
-                func: function() {
-                    if (confirm("你确定要执行该删除操作吗？一旦执行，不可逆转")) {
-                        doType = 1;
-                        sourcePath = pathPre + encodeURIComponent("/" + filePath);
-                        snedOperateShell("shellOperate?sourcePath=" + sourcePath + "&doType=" + doType);
-                    } else {
-                        return false;
-                    }
-                }
-            }],
-            [{
-                text: "移动",
-                func: function() {
-                    doType = 2;
-                    openFolderDialog();
-                    sourcePath = pathPre + encodeURIComponent("/" + filePath);
-                }
-            }],
-            [{
-                text: "复制",
-                func: function() {
-                    doType = 3;
-                    openFolderDialog();
-                    sourcePath = pathPre + encodeURIComponent("/" + filePath);
-                }
-            }],
-            [{
-                text: "重命名",
-                func: function() {
-                    doType = 4;
-                    sourcePath = pathPre + encodeURIComponent("/" + filePath);
-                    var newName = prompt("请输入新文件名");
-                    if ($.trim(newName).length < 1 || $.trim(newName).indexOf("/") > -1) {
-                        alert("请输入合法文件名");
-                        return false;
-                    } else {
-                        targetPath = pathPre + "/" + encodeURIComponent(newName);
-                        snedOperateShell("shellOperate?sourcePath=" + sourcePath + "&targetPath=" + targetPath + "&doType=" + doType);
-                    }
-                }
-            }],
-            [{
-                text: "zip解压",
-                func: function() {
-                    doType = 7;
-                    if (filePath.indexOf(".zip") > -1) {
-                        sourcePath = pathPre + encodeURIComponent("/" + filePath);
-                        snedOperateShell("shellOperate?sourcePath=" + sourcePath + "&targetPath=" + targetPath + "&doType=" + doType);
-                    } else {
-                        alert("该文件类型不能进行zip解压");
-                    }
-                }
-            }],
-            [{
-                text: "取消",
-                func: function() {}
-            }]
-        ];
-        var dataHtml = [
-            [{
-                text: "上传",
-                func: function() {
-                    openUploadDialog();
-                }
-            }],
-            [{
-                text: "刷新",
-                func: function() {
-                    window.location.href = reloadPath;
-                }
-            }],
-            [{
-                text: "新建文件",
-                func: function() {
-                    doType = 5;
-                    var newName = prompt("请输入文件名");
-                    if ($.trim(newName).length < 1 || $.trim(newName).indexOf("/") > -1) {
-                        alert("请输入合法文件名");
-                        return false;
-                    } else {
-                        targetPath = pathPre + "/" + encodeURIComponent(newName);
-                        snedOperateShell("shellOperate?sourcePath=" + sourcePath + "&targetPath=" + targetPath + "&doType=" + doType);
-                    }
-                }
-            }],
-            [{
-                text: "新建文件夹",
-                func: function() {
-                    doType = 6;
-                    var newName = prompt("请输入新文件夹名");
-                    if ($.trim(newName).length < 1 || $.trim(newName).indexOf(".") > -1 || $.trim(newName).indexOf("/") > -1) {
-                        alert("请输入合法文件夹名");
-                        return false;
-                    } else {
-                        targetPath = pathPre + "/" + encodeURIComponent(newName);
-                        snedOperateShell("shellOperate?sourcePath=" + sourcePath + "&targetPath=" + targetPath + "&doType=" + doType);
-                    }
-                }
-            }],
-            [{
-                text: "内存使用情况",
-                func: function() {
-                    openShellDialog();
-                    var xr = new XMLHttpRequest();
-                    xr.open("GET", "shellMemCondition");
-                    xr.onreadystatechange = function() {
-                        if (xr.readyState == 4) {
-                            if (xr.status == 200) {
-                                document.getElementById("shellContent").innerText = xr.responseText;
-                                document.getElementById("spinner").style.display = "none";
-                            }
-                        }
-                    }
-                    xr.send(null);
-                }
-            }],
-            [{
-                text: "搜索",
-                func: function() {
-                    openSearchDialog();
-                }
-            }],
-            [{
-                text: "取消",
-                func: function() {}
-            }]
-        ];
-        var optionFile = {
-            name: "menu1",
-            offsetX: 0
-        };
-        var optionFolder = {
-            name: "menu2",
-            offsetX: 0
-        };
-        var optionHtml = {
-            name: "menu3",
-            offsetX: 0
-        };
-        $("#fileDiv").attr("cursor", "pointer");
-        $("#fileDiv").smartMenu(dataFile, optionFile);
-        $("#folderDiv").attr("cursor", "pointer");
-        $("#folderDiv").smartMenu(dataFolder, optionFolder);
-        $("html").smartMenu(dataHtml, optionHtml);
-
-        function changeInPutSearchName() {
-            var searchFlag = document.getElementById("searchFile").value;
-            if (searchFlag == 1) {
-                document.getElementById("searchNameIP").style.display = "";
-                document.getElementById("searchNameTT").style.display = "none";
-            } else if (searchFlag == 2) {
-                document.getElementById("searchNameIP").style.display = "none";
-                document.getElementById("searchNameTT").style.display = "";
-            }
-        }
-
-        function mouserover(path) {
-            filePath = path;
-            //console.log(filePath);
-        }
-
-        function downlSearch(path) {
-            if (validatePasswd(prompt("请输入密码！！！"))) {
-                window.location.href = "http://<%= dataip %>/filedownload?path=" + encodeURIComponent(path);
-            }
-        }
-
-        function validatePasswd(pass) {
-            if (compile(pass) == passwd) {
-                return true;
-            } else {
-                alert("密码验证失败！！！");
-                return false;
-            }
-        }
-
-        function downl(path) {
-            if (validatePasswd(prompt("请输入密码！！！"))) {
-                window.location.href = "http://<%= dataip %>/filedownload?path=" + pathPre + encodeURIComponent("/" + path);
-            }
-        }
-
-        //预览
-        function preView(path) {
-            // window.location.title = "文件预览";
-            // window.location.href = "http://<%= dataip %>/fileView?path=" + pathPre + encodeURIComponent("/" + path);
-            var myWindow = window.open("http://<%= dataip %>/fileView?path=" + pathPre + encodeURIComponent("/" + path));
-            // myWindow.document.title = "这里写个标题";
-        }
-
-        function go(path) {
-            window.location.href = "http://<%= dataip %>/filelist?path=" + pathPre + encodeURIComponent("/" + path);
-        }
-
-        /**
-         * 完美实现字符全部替换功能
-         * @param str
-         * @param sptr1
-         * @param sptr2
-         * @returns {string}
-         */
-        function replaceAll(str, sptr1, sptr2) {
-            var strTemp = "";
-            var flag = 0;
-            var length = 0;
-            var begin = 0;
-            if (str.indexOf(sptr1, flag + length) == -1) {
-                return str;
-            }
-            while ((flag = str.indexOf(sptr1, flag + length)) > -1) {
-                strTemp += str.substring(begin, flag) + sptr2;
-                length = sptr2.length;
-                begin = flag + sptr1.length;
-            }
-            if (length != 0) { //进行过截断
-                strTemp += str.substring(begin, str.length);
-            }
-            return strTemp;
-        }
-
         $("#uploadDialog").dialog({
             autoOpen: false,
             width: 400,
@@ -667,6 +348,7 @@
                     var xhr = new XMLHttpRequest();
                     xhr.open("POST", "searchFile", true); //修改成自己的接口
                     // xhr.setRequestHeader("Content-Type", "application/form-data");
+                    xhr.setRequestHeader("context-type", "text/xml;charset=utf-8");
                     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
                     xhr.onreadystatechange = function() {
                         if (xhr.readyState == 4) {
@@ -693,21 +375,6 @@
             }]
         });
 
-        function showSearchFile(searchFiles) {
-            $("#showSearchFileUL").html("");
-            for (var i = 0; i < searchFiles.length - 1; i++) {
-                var htmlTemp = '  <li class="file" title="单击下载" style="cursor: pointer;width:100%;height:auto;background:none;margin-left:0px ">' +
-                    '<a style="cursor: pointer;width:100%;height:auto;background:none;margin-left:0px;border:none "  title = "单击下载" href = "javascript:void(0)" onclick = "downlSearch(' + "'" + searchFiles[i] + "'" + ')" >' +
-                    searchFiles[i] + '</a> </li > ';
-                $("#showSearchFileUL").append(htmlTemp);
-            }
-        }
-
-        // function getNameByPath(pathToName) {
-        //     return pathToName.split("/")[pathToName.split("/").length - 1];
-        // }
-
-
         $("#showSearchFileDialog").dialog({
             autoOpen: false,
             width: screen.width * 3 / 5,
@@ -732,207 +399,19 @@
             }, {
                 text: "确定",
                 click: function() { //确定
-                    snedOperateShell("shellOperate?sourcePath=" + sourcePath + "&targetPath=" + targetPath + "&doType=" + doType);
+                    if (isForbidAsk(isPrettyPhoto(targetPath), 1) || validatePasswd()) {
+                        snedOperateShell("shellOperate?sourcePath=" + sourcePath + "&targetPath=" + targetPath + "&doType=" + doType);
+                    }
                 }
             }]
         });
 
-        function snedOperateShell(url) {
-            if (validatePasswd(prompt("请输入密码！！！"))) {
-                //向服务器发送移动命令
-                var xr = new XMLHttpRequest();
-                xr.open("GET", url);
-                xr.onreadystatechange = function() {
-                    if (xr.readyState == 4) {
-                        if (xr.status == 200) {
-                            alert(xr.responseText);
-                            window.location.href = reloadPath;
-                        }
-                    }
-                }
-                xr.send(null);
-            }
-        }
-
-        function openSearchDialog() {
-            document.getElementById("spinnerSearch").style.display = "none";
-            document.getElementById("searchDiv").style.display = "";
-            $("#searchDialog").dialog("open");
-        }
-
-        function openFolderDialog() {
-            $("#chooseFolderDialog").dialog("open");
-            //请求显示文件系统所有目录
-            var xr = new XMLHttpRequest();
-            xr.open("GET", "getFolderAll?path=" + pathPre);
-            xr.onreadystatechange = function() {
-                if (xr.readyState == 4) {
-                    if (xr.status == 200) {
-                        initZtree(xr.responseText);
-                    }
-                }
-            }
-            xr.send(null);
-        }
-
-
-        function openUploadDialog() {
-            if (validatePasswd(prompt("请输入密码！！！"))) {
-                $("#uploadDialog").dialog("open");
-            }
-        }
-
-        function openShellDialog() {
-            document.getElementById("spinner").style.display = "";
-            $("#shellDialog").dialog("open");
-        }
-
-
-        //上传文件配置
-        function validate() {
-            try {
-                var obj_file = document.getElementById("uploadFile");
-                if (obj_file.value == "") {
-                    alert("请先选择上传文件");
-                    return;
-                }
-                //            document.getElementById("upload_submitForm").submit();
-                //            return false;
-                var fd = new FormData();
-                fd.append("uploadFile", document.getElementById('uploadFile').files[0]);
-                fd.append("fileName", document.getElementById('uploadFile').files[0].name);
-                fd.append("dirpath", document.getElementById('dirpath').value);
-                var xhr = new XMLHttpRequest();
-                xhr.upload.addEventListener("progress", uploadProgress, false);
-                xhr.addEventListener("load", uploadComplete, false);
-                xhr.addEventListener("error", uploadFailed, false);
-                xhr.addEventListener("abort", uploadCanceled, false);
-                xhr.open("POST", "uploadFile"); //修改成自己的接口
-                xhr.setRequestHeader("context-type", "text/xml;charset=utf-8");
-                xhr.send(fd);
-            } catch (e) {
-                alert(e);
-            }
-        }
-
-        function uploadProgress(evt) {
-            if (evt.lengthComputable) {
-                var percentComplete = evt.loaded * 100 / evt.total;
-                document.getElementById('progressNumber').style.display = "";
-                document.getElementById('progressNumber').value = percentComplete;
-				console.log("正在上传");
-            } else {
-                document.getElementById('progressNumber').innerHTML = 'unable to compute';
-            }
-        }
-
-        function uploadComplete() {
-            /* 服务器端返回响应时候触发event事件*/
-			console.log("上传成功");
-			document.getElementById('download').innerHTML = "上传成功,你可以继续上传文件";
-            document.getElementById("upload_submitForm").reset();
-            document.getElementById("fileName").innerHTML = "";
-            document.getElementById("fileSize").innerHTML = "";
-            document.getElementById("fileType").innerHTML = "";
-			if(isDragUploadFile){
-				setTimeout(function(){
-				 $("#uploadDialog").dialog("close");
-				},1000);
-			}
-			
-        }
-
-        function uploadFailed(evt) {
-            alert("上传文件失败");
-        }
-
-        function uploadCanceled(evt) {
-            alert("取消上传文件");
-        }
-        //initZtree();
-        var setting;
-
-        function initZtree(json) {
-            var zTreeObj;
-            setting = {
-                callback: {
-                    onClick: clicTree,
-                    onCollapse: onCollapse,
-                    onExpand: onExpand
-                },
-                data: {
-                    simpleData: {
-                        enable: true,
-                        idKey: "id",
-                        pIdKey: "pId",
-                        rootPId: 0
-                    },
-                }
-            };
-            var zNodes = JSON.parse(json);
-            zTreeObj = $.fn.zTree.init($("#folderZtree"), setting, zNodes);
-            var treeObj = $.fn.zTree.getZTreeObj("folderZtree");
-            pathPre = replaceAll(pathPre, "%2F", "/");
-            pathPre = replaceAll(pathPre, "//", "/");
-            console.log(decodeURIComponent(pathPre));
-            var node = treeObj.getNodeByParam("id", decodeURIComponent(pathPre));
-            treeObj.selectNode(node);
-            treeObj.expandNode(node, true, false); //指定选中ID节点展开
-            console.log(node);
-        }
-
-        function clicTree(event, treeId, treeNode) {
-            targetPath = treeNode.id;
-            console.log(treeNode);
-        }
-
-        function onCollapse() {
-
-        }
-
-        function onExpand(event, treeId, treeNode) {
-            addNode(treeNode);
-        }
-
-        function addNode(treeNode) {
-            //动态加载子节点
-            var xr = new XMLHttpRequest();
-            xr.open("GET", "getFolderNodes?path=" + encodeURIComponent(treeNode.id));
-            xr.onreadystatechange = function() {
-                if (xr.readyState == 4) {
-                    if (xr.status == 200) {
-                        if (xr.responseText.length > 0) {
-                            var treeObj = $.fn.zTree.getZTreeObj("folderZtree");
-                            //判断原来子节点和新子节点是否相同，相同不刷新，不相同刷新
-                            var beforeNodeChildren = treeObj.getNodesByParam("id", treeNode.id, null)[0].children;
-                            var newNodeChildren = JSON.parse(xr.responseText);
-                            var isEqual = true;
-                            if (beforeNodeChildren != null && newNodeChildren.length == beforeNodeChildren.length && newNodeChildren.length > 0) {
-                                for (var i = 0; i < newNodeChildren.length; i++) {
-                                    if (newNodeChildren[i].id != beforeNodeChildren[i].id) {
-                                        isEqual = false;
-                                        break;
-                                    }
-                                }
-                            } else {
-                                isEqual = false;
-                            }
-                            if (!isEqual) {
-                                treeObj.removeChildNodes(treeNode);
-                                treeObj.expandNode(treeNode, false, false); //指定选中ID节点展开
-                                treeObj.addNodes(treeNode, JSON.parse(xr.responseText));
-                                treeObj.expandNode(treeNode, true, false); //指定选中ID节点展开
-                            }
-                        }
-                    }
-                }
-            }
-            xr.send(null);
-        }
 
 
         function isCanOpen(pathTemp) {
-            var arrCanOpen = [".txt", ".js", ".java", ".html", ".py", ".bat", ".c", ".c++", ".md", ".log"];
+            var arrCanOpen = [".txt", ".js", ".java", ".html", ".py", ".bat",
+                ".c", ".c++", ".md", ".log", ".sql"
+            ];
             for (var i = 0; i < arrCanOpen.length; i++) {
                 if (pathTemp.indexOf(arrCanOpen[i]) > -1) {
                     return true;
@@ -956,7 +435,7 @@
         %>
 
         function isImg(pathTemp) {
-            var imgType = [".jpg", ".png", ".gif",".jpeg"];
+            var imgType = [".jpg", ".png", ".gif", ".jpeg"];
             for (var i = 0; i < imgType.length; i++) {
                 if (pathTemp.indexOf(imgType[i]) > -1) {
                     return true;
@@ -964,28 +443,17 @@
             }
             return false;
         }
-
-        //简单的加密方法
-        function compile(code) {
-            var c = String.fromCharCode(code.charCodeAt(0) * 2 + code.length - 1);
-            for (var i = 1; i < code.length; i++) {
-                c += String.fromCharCode(code.charCodeAt(i) + code.charCodeAt(i - 1));
-                c += String.fromCharCode(code.charCodeAt(i) - code.charCodeAt(i - 1));
-                c += String.fromCharCode(code.charCodeAt(i) * 2 - code.charCodeAt(i - 1));
-                c += String.fromCharCode(code.charCodeAt(i) / 2 + code.charCodeAt(i - 1));
-            }
-            return escape(c);
-        }
-
         init();
 
         function init() {
+            //改变文件图标
+            chageIconFile();
             //如果文件是图片，那就显示为图片
             var liImages = document.getElementsByName("li_image");
             var imgImages = document.getElementsByName("img_image");
             var aImages = document.getElementsByName("a_image");
             for (var i = 0; i < liImages.length; i++) {
-                var urlimg = "http://<%= dataip %>/filedownload?path=" + pathPre + encodeURIComponent("/" + liImages[i].title);
+                var urlimg = "http://<%= dataip %>/filedownload?path=" + isPrettyPhoto(pathPre) + encodeURIComponent("/" + liImages[i].title);
                 liImages[i].style.background = "#ffffff";
                 imgImages[i].src = urlimg;
                 aImages[i].href = urlimg;
@@ -1018,62 +486,24 @@
                 }
             });
             //var fileDivDrag = document.getElementById("fileDiv");
-			//var folderDivDrag = document.getElementById("folderDiv");
+            //var folderDivDrag = document.getElementById("folderDiv");
             document.getElementsByTagName("html")[0].addEventListener("drop", function(e) {
                 e.preventDefault(); //取消默认浏览器拖拽效果 
                 var fileListDrag = e.dataTransfer.files; //获取文件对象 
                 //检测是否是拖拽文件到页面的操作 
                 if (fileListDrag.length == 0) {
-					alert("拖拽文件不存在!!!");
+                    alert("拖拽文件不存在!!!");
                     return false;
                 }
                 //showDragImg(fileListDrag);
                 //上传
-				isDragUploadFile = true;
+                isDragUploadFile = true;
                 openUploadDialog();
-				for(var i=0;i<fileListDrag.length;i++){
-					document.getElementById('filedesc').innerHTML = '文件总个数: ' +fileListDrag.length+"个";
-					uploadFileDrag(fileListDrag[i]);
-				}
+                for (var i = 0; i < fileListDrag.length; i++) {
+                    document.getElementById('filedesc').innerHTML = '文件总个数: ' + fileListDrag.length + "个";
+                    uploadFileDrag(fileListDrag[i]);
+                }
             });
-        }
-		
-		function uploadFileDrag(fileDrag){
-                console.log("拖拽上传" + fileDrag.name + "文件,大小" + parseInt(fileDrag.size / 1024) + "kb");
-				document.getElementById('fileName').innerHTML = 'Name: ' +fileDrag.name;
-				document.getElementById('fileSize').innerHTML = 'Name: ' +fileDrag.size;
-				document.getElementById('fileType').innerHTML = 'Name: ' +fileDrag.type;
-				var fd = new FormData();
-                fd.append("uploadFile", fileDrag);
-                fd.append("fileName",fileDrag.name);
-                fd.append("dirpath", document.getElementById('dirpath').value);
-                var xhr = new XMLHttpRequest();
-                xhr.upload.addEventListener("progress", uploadProgress, false);
-                xhr.addEventListener("load", uploadComplete, false);
-                xhr.addEventListener("error", uploadFailed, false);
-                xhr.addEventListener("abort", uploadCanceled, false);
-                xhr.open("POST", "uploadFile"); //修改成自己的接口
-                xhr.setRequestHeader("context-type", "text/xml;charset=utf-8");
-                xhr.send(fd);
-		}
-
-        function showDragImg(fileListDrag) {
-            //检测文件是不是图片 
-            if (fileListDrag[0].type.indexOf('image') === -1) {
-                alert("您拖的不是图片！");
-                return false;
-            }
-            //拖拉图片到浏览器，可以实现预览功能
-            var img = window.URL.createObjectURL(fileListDrag[0]);
-            var filename = fileListDrag[0].name; //图片名称
-            var filesize = Math.floor((fileListDrag[0].size) / 1024);
-            if (filesize > 500) {
-                alert("上传大小不能超过500K.");
-                return false;
-            }
-            //alert(filesize);
-            var str = "<img src='" + img + "'><p>图片名称：" + filename + "</p><p>大小：" + filesize + "KB</p>";
-            $("#body_div").html(str);
         }
     </script>
 </body>

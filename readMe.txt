@@ -34,3 +34,9 @@ version 2.1
 time 2017/8/21
 author wy
 添加功能：实现了文件的在线编辑
+
+7.项目功能添加
+version 2.2
+time 2017/8/30
+aythor wy
+添加功能：增加对html,txt,doc等图标的区分显示，增加日志系统对ip地理位置的解析[使用高德地图api]

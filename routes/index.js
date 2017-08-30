@@ -22,7 +22,7 @@ router.get('/wtiy', function(req, res, next) {
 
 //下载文件
 router.get('/filedownload', function(req, res, next) {
-    saveLog(req);
+   
     var filepath = req.query.path;
     downloadFile(filepath, res, req);
 });

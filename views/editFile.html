@@ -63,7 +63,7 @@
             type: 'GET',
             dataType: 'html',
             success: function(data) {
-                $("#data_textArea").html(data);
+                $("#data_textArea").text(data);
             },
             error: function(data) {
                 alert("服务器繁忙，请稍后再试!!!")
