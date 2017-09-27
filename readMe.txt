@@ -1,4 +1,4 @@
-﻿1.局域网文件磁盘下载node
+1.局域网文件磁盘下载node
 version 1.0
 time 2016/8/25
 author wy
@@ -40,3 +40,9 @@ version 2.2
 time 2017/8/30
 aythor wy
 添加功能：增加对html,txt,doc等图标的区分显示，增加日志系统对ip地理位置的解析[使用高德地图api]
+
+8.项目功能添加
+version 2.2
+time 2017/8/30
+aythor wy
+添加功能：增加视频播放功能，增加上传文件时上传速度显示，增加根目录和上级目录的跳转

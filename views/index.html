@@ -166,6 +166,10 @@
         top: -1px;
         left: 130px;
     }
+    
+    a {
+        cursor: pointer;
+    }
 </style>
 <script>
     $(function() {
@@ -196,7 +200,10 @@
 </script>
 
 <body>
-    <div id="body_div">
+    <div>
+        <a onclick="go('',2)">根目录</a><a style="margin-left:30px;" onclick="go('',3)">上级菜单</a>
+    </div>
+    <div id="body_div" style="margin-top:10px;">
         <!--文件夹显示效果-->
         <div class="alldom" id="folderDiv">
             <ul class="ul">
@@ -225,7 +232,7 @@
                     </a>
                     </li>
                     <%}else{%>
-                        <li class="file" title="<%= filenamelist[i] %>" onmouseover="mouserover('<%= filenamelist[i] %>')">
+                        <li class="file" id="<%= filenamelist[i] %>" title="<%= filenamelist[i] %>" onmouseover="mouserover('<%= filenamelist[i] %>')">
                             <a name="file_a" title="<%= filenamelist[i] %>" style="cursor: pointer" href="javascript:void(0)" onclick="downl('<%= filenamelist[i] %>')" class="folder">
                                 <%= filenamelist[i] %>
                             </a>
@@ -243,8 +250,8 @@
             <p id="fileName"></p>
             <p id="fileSize"></p>
             <p id="fileType"></p>
-            <progress id="progressNumber" value="0" max="100" style="display: none"></progress>
-            <div hidden id="progressSpeed"></div>
+            <progress id="progressNumber" value="0" max="100" style="display: none"></progress><span id="progress_span"></span>
+            <div id="progressSpeed"></div>
             <div id="download"></div>
             <input type="hidden" name="dirpath" id="dirpath">
             <input type="button" style="margin-top: 10px" id="uploadFileBtn" onclick="validate()" value=" 上传文件 ">
@@ -453,7 +460,7 @@
             var imgImages = document.getElementsByName("img_image");
             var aImages = document.getElementsByName("a_image");
             for (var i = 0; i < liImages.length; i++) {
-                var urlimg = "http://<%= dataip %>/filedownload?path=" + isPrettyPhoto(pathPre) + encodeURIComponent("/" + liImages[i].title);
+                var urlimg = "http://al.wtianyu.com:3010/filedownload?path=" + isPrettyPhoto(pathPre) + encodeURIComponent("/" + liImages[i].title);
                 liImages[i].style.background = "#ffffff";
                 imgImages[i].src = urlimg;
                 aImages[i].href = urlimg;

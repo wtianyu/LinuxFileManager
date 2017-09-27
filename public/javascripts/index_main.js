@@ -1,4 +1,4 @@
-  var dataip = "123.1.151.52:3010"
+  var dataip = "al.wtianyu.com:3010"
   var passwd = "kb%uFFFE.J%60%000Hg%07%3EKh%uFFFA+Oj%08AMr%009Ul%uFFFA-R"; //"gb%uFFFE.J%60%000Hg%07%3EK1";
   var isDragUploadFile = false; //是否是拖拽上传文件
   var sourcePath;
@@ -7,9 +7,15 @@
   var doType;
   var reloadPath = window.location.href;
   var pathPre = window.location.href;
+  //视频的正则识别
+  var videoTypeReg = "([.mp4]{4}$)|([.avi]{4}$)|([.flv]{4}$)|([.3gp]{4}$)|([.rmvb]{5}$)"
 
   var isUsePasswd = true;
   var isLimitAsk = "%E4%B8%B4%E6%97%B6%E6%96%87%E4%BB%B6%E7%9B%AE%E5%BD%95"; //临时文件夹
+  //用来计算上传速度
+  var time;
+  var upload_flush_count = 5; //上传速度刷新频率
+  var upload_count = 0;
 
   if (pathPre.indexOf("path=") > -1) {
       pathPre = pathPre.split("path=")[pathPre.split("path=").length - 1];
@@ -88,6 +94,15 @@
                   preView(filePath);
               } else if (isImg(filePath)) {
                   document.getElementById(filePath).click()
+              } else if (filePath.toLocaleLowerCase().match(new RegExp(videoTypeReg))) {
+                  if (confirm("该文件为视频文件，是否进行播放")) {
+                      //播放视频
+                      var videoObj_li = document.getElementById(filePath);
+                      videoObj_li.style.width = "150px";
+                      videoObj_li.style.background = "#ffffff";
+                      var videoSrc = "http://al.wtianyu.com:3010/filedownload?path=" + isPrettyPhoto(pathPre) + encodeURIComponent("/" + filePath);
+                      videoObj_li.innerHTML = "<video width='150px' height='115px' title='" + filePath + "' ondblclick='playVideoFull(this)' controls='controls' src='" + videoSrc + "'  />"
+                  }
               } else {
                   alert("该文件类型不能进行编辑!!!");
               }
@@ -169,7 +184,7 @@
       [{
           text: "刷新",
           func: function() {
-              window.location.href = reloadPath;
+              window.location.reload();
           }
       }],
       [{
@@ -262,6 +277,27 @@
       //console.log(filePath);
   }
 
+  //播放视频全屏
+  function playVideoFull(obj) {
+      var docElm = obj;
+      //W3C
+      if (docElm.requestFullscreen) {
+          docElm.requestFullscreen();
+      }
+      //FireFox
+      else if (docElm.mozRequestFullScreen) {
+          docElm.mozRequestFullScreen();
+      }
+      //Chrome等
+      else if (docElm.webkitRequestFullScreen) {
+          docElm.webkitRequestFullScreen();
+      }
+      //IE11
+      else if (elem.msRequestFullscreen) {
+          elem.msRequestFullscreen();
+      }
+  }
+
   function downlSearch(path) {
       if (isForbidAsk(path) || validatePasswd()) {
           window.location.href = "http://" + dataip + "/filedownload?path=" + encodeURIComponent(path);
@@ -298,8 +334,17 @@
       // myWindow.document.title = "这里写个标题";
   }
 
-  function go(path) {
+  function go(path, flag) {
       if (isForbidAsk(path)) {
+          if (flag == 2) { //去根目录
+              window.location.href = "http://" + dataip + "/filelist?path=" + encodeURIComponent("/");
+              return true;
+          } else if (flag == 3) { //返回上级目录
+              pathPre = replaceAll(pathPre, "%2F", "/");
+              var pathPreIndex = pathPre.lastIndexOf("/");
+              window.location.href = "http://" + dataip + "/filelist?path=" + encodeURIComponent("/" + pathPre.substring(0, pathPreIndex));
+              return true;
+          }
           window.location.href = "http://" + dataip + "/filelist?path=" + isPrettyPhoto(pathPre) + encodeURIComponent("/" + path);
       }
   }
@@ -314,7 +359,7 @@
       }
       pathTempDir2 = replaceAll(pathTempDir2, "/", "");
       pathTempDir2 = replaceAll(pathTempDir2, "%2F", "");
-      if (pathTempDir2.substring(0, isLimitAsk.length) == isLimitAsk) {
+      if (pathTempDir2.substring(0, isLimitAsk.length) == isLimitAsk || sessionStorage.getItem("password") == passwd) {
           //允许访问
           return true;
       }
@@ -349,6 +394,7 @@
       }
       return strTemp;
   }
+
 
   function showSearchFile(searchFiles) {
       $("#showSearchFileUL").html("");
@@ -449,10 +495,29 @@
 
   function uploadProgress(evt) {
       if (evt.lengthComputable) {
+          var progress_loaded = document.getElementById('progressNumber').value; //已经加载的数据
           var percentComplete = evt.loaded * 100 / evt.total;
+          document.getElementById("progress_span").innerHTML = percentComplete.toFixed(2) + "%";
           document.getElementById('progressNumber').style.display = "";
           document.getElementById('progressNumber').value = percentComplete;
-          console.log("正在上传");
+          if (time == null) {
+              time = evt.timeStamp;
+          } else if ((++upload_count) % upload_flush_count == 0) {
+              upload_count = 0;
+              var timeDif = (evt.timeStamp - time) / 1000; //秒
+              var loaded_data = ((percentComplete - progress_loaded) * evt.total / 100) / 1024; //kb
+              //   console.log(loaded_data + "kb");
+              //   console.log(timeDif + "s");
+              //   console.log((loaded_data / timeDif).toFixed(2));
+              var progressSpeed = (loaded_data / timeDif).toFixed(2);
+              if (progressSpeed > 1024) {
+                  document.getElementById("progressSpeed").innerHTML = (progressSpeed / 1024).toFixed(2) + "M/s";
+              } else {
+                  document.getElementById("progressSpeed").innerHTML = progressSpeed + "kb/s";
+              }
+          }
+          console.log("正在上传" + percentComplete.toFixed(2) + "%");
+          time = evt.timeStamp;
       } else {
           document.getElementById('progressNumber').innerHTML = 'unable to compute';
       }
@@ -466,6 +531,7 @@
       document.getElementById("fileName").innerHTML = "";
       document.getElementById("fileSize").innerHTML = "";
       document.getElementById("fileType").innerHTML = "";
+      document.getElementById("progressSpeed").innerHTML = "";
       if (isDragUploadFile) {
           setTimeout(function() {
               $("#uploadDialog").dialog("close");
@@ -565,6 +631,7 @@
 
   function chageIconFile() {
       $("[name='file_a']").each(function() {
+
           var filename_a = $(this).text().trim();
           //.doc和.docx的图标变更
           if ((filename_a.length > 4 && filename_a.substring(filename_a.length - 4, filename_a.length).toLocaleLowerCase() == ".doc") ||
@@ -596,18 +663,22 @@
               (filename_a.length > 5 && filename_a.substring(filename_a.length - 5, filename_a.length).toLocaleLowerCase() == ".html")) {
               $(this).parent().css("background", "url(/images/html.png) center top no-repeat");
           }
+          //video图标变更
+          else if (filename_a.toLocaleLowerCase().match(new RegExp(videoTypeReg))) {
+              $(this).parent().css("background", "url(/images/video.jpg) center top no-repeat");
+          }
       });
   }
 
   function uploadFileDrag(fileDrag) {
       console.log("拖拽上传" + fileDrag.name + "文件,大小" + parseInt(fileDrag.size / 1024) + "kb");
       document.getElementById('fileName').innerHTML = 'Name: ' + fileDrag.name;
-      document.getElementById('fileSize').innerHTML = 'Name: ' + fileDrag.size;
-      document.getElementById('fileType').innerHTML = 'Name: ' + fileDrag.type;
+      document.getElementById('fileSize').innerHTML = 'Size: ' + parseInt(fileDrag.size / 1024) + "kb";
+      document.getElementById('fileType').innerHTML = 'Type: ' + fileDrag.type;
       var fd = new FormData();
       fd.append("uploadFile", fileDrag);
       fd.append("fileName", fileDrag.name);
-      fd.append("dirpath", document.getElementById('dirpath').value);
+      fd.append("dirpath", isPrettyPhoto(document.getElementById('dirpath').value));
       var xhr = new XMLHttpRequest();
       xhr.upload.addEventListener("progress", uploadProgress, false);
       xhr.addEventListener("load", uploadComplete, false);
