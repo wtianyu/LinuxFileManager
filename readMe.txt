@@ -63,4 +63,10 @@ aythor wy
 version 2.6
 time 2018/1/23
 aythor wy
+添加功能：添加doc、xls和ppt的在线预览。使用微软的在线预览office接口
+
+12.项目功能添加
+version 2.6
+time 2018/1/23
+aythor wy
 添加功能：升级es模板版本，防止安全问题。增加文件详情页面
