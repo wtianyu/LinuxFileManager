@@ -3,12 +3,12 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <script language="javascript" src="http://www.cy.wtianyu.com/js/jquery-3.2.1.js"></script>
+    <script language="javascript" src="/javascripts/jquery-3.2.1.js"></script>
     <link href="/stylesheets/index_q_a.css" rel="stylesheet">
     <title>编辑文件</title>
-    <script language="javascript" src="http://www.cy.wtianyu.com/js/jquery.form.js"></script>
+    <script language="javascript" src="/javascripts/jquery.form.js"></script>
     <!--代码高亮-->
-    <!--<script type="text/javascript" src="/syntaxhighlighter-scripts/shCore.js"></script>
+    <script type="text/javascript" src="/syntaxhighlighter-scripts/shCore.js"></script>
     <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushBash.js"></script>
     <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushCss.js"></script>
     <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushCSharp.js"></script>
@@ -22,7 +22,7 @@
     <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushXml.js"></script>
     <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushPerl.js"></script>
     <link type="text/css" rel="stylesheet" href="/syntaxhighlighter-styles/shCore.css" />
-    <link type="text/css" rel="stylesheet" href="/syntaxhighlighter-styles/shThemeDefault.css" />-->
+    <link type="text/css" rel="stylesheet" href="/syntaxhighlighter-styles/shThemeDefault.css" />
 
 </head>
 
@@ -33,19 +33,46 @@
             <div class="title" style="height:32px;font-size:16px;margin-bottom: 0.5em;"><img class="r" style="cursor:pointer;" onclick="closeEditHtml()" src="/images/close_file.png"><img class="r" style="cursor:pointer;" onclick="submitBtn()" src="/images/save_file.png">文件内容<span id="isSave" style="color:#FF83FA;font-size:12px;"><span></div>
             <!--<div id="div_show" style="min-width:98%;min-height:500px;border:solid 1px #DBDBDB;" contenteditable="true">
             </div>-->
-            <textarea id="data_textArea" onkeyup="isNoSave()" name="data_textArea" style="min-width:98%;min-height:500px;border:solid 1px #DBDBDB;margin-top:10px;"></textarea>
+            <textarea  id="data_textArea" onkeyup="isNoSave()" onblur="dataTextAreaBlur()" name="data_textArea" style="min-width:98%;min-height:500px;border:solid 1px #DBDBDB;margin-top:10px;display:none">
+            </textarea>
+            <div id="data_div" ondblclick="dataDivDB()">
+
+            </div>
         </form>
     </div>
 </body>
 <script>
+    var hightType = "java";
     //高亮模式初始化
-    // initSyntaxHighlighter();
+     initSyntaxHighlighter();
     //异步读取文件内容
     showHtml();
 
     function isNoSave(){
         $("#isSave").text("[未保存]");
     }
+
+    //切换为编辑状态
+    function dataDivDB(){
+        $("#data_textArea").css("display","");
+        $("#data_div").css("display","none");
+        $("#data_textArea").focus();
+    }
+    //切换为高亮状态
+    function dataTextAreaBlur(){
+        $("#data_textArea").css("display","none");
+        $("#data_div").css("display","");
+        $("#data_div").html("<pre class='brush:"+hightType+";'>"+$("#data_textArea").val()+"</pre>");
+        SyntaxHighlighter.highlight();//启动渲染
+        // if("[未保存]"==$("#isSave").text()){
+        //     submitBtn();
+        // }
+    }
+
+    //每五分钟保存一次
+    setInterval(function(){
+        submitBtn();
+    },300000);
 
     function closeEditHtml(){
         if($("#isSave").text()=="[未保存]"){
@@ -63,17 +90,18 @@
             type: 'GET',
             dataType: 'html',
             success: function(data) {
-                $("#data_textArea").text(data);
+                hightType = getHightType("<%=filepath%>");
+                $("#data_div").html("<pre class='brush:"+hightType+";'>"+data+"</pre>");
+                SyntaxHighlighter.highlight();//启动渲染
+               $("#data_textArea").text(data);
             },
             error: function(data) {
                 alert("服务器繁忙，请稍后再试!!!")
             }
         });
     }
-
     //保存文件
     function submitBtn() {
-        $("#data").val($("#data_pre"))
         var ajax_option = {
             dataType: 'html',
             type: 'POST',
@@ -92,15 +120,67 @@
     }
 
     function initSyntaxHighlighter() {
+        console.log(SyntaxHighlighter.defaults);
+        SyntaxHighlighter.config.clipboardSwf = 'scripts/clipboard.swf';
         SyntaxHighlighter.defaults['toolbar'] = false; //去掉右上角问号图标
+        SyntaxHighlighter.defaults['collapse'] = false;//是否折叠代码
+        SyntaxHighlighter.defaults['gutter'] = false;//是否显示行号
+        SyntaxHighlighter.defaults['title'] = "双击修改文件内容";//标题
+        //SyntaxHighlighter.defaults['quick-code'] = false;//双击复制粘贴
+        SyntaxHighlighter.defaults['auto-links'] = false;//自动生成链接
         SyntaxHighlighter.config.tagName = 'pre'; //可以更改解析的默认Tag。
-        SyntaxHighlighter.config.bloggerMode = true;
-        SyntaxHighlighter.config.stripBrs = true;
-        SyntaxHighlighter.defaults['collapse'] = false;
-        SyntaxHighlighter.gutter = false;
-        SyntaxHighlighter.config.stripBrs = true;
+         SyntaxHighlighter.config.strings = {
+            expandSource : '展开代码',
+            viewSource : '查看代码',
+            copyToClipboard : '复制代码',
+            copyToClipboardConfirmation : '代码复制成功',
+            print : '打印',
+            help: '?',
+            alert: '语法高亮\n\n',
+            noBrush: '不能找到刷子: ',
+            brushNotHtmlScript: '刷子没有配置html-script选项',
+            aboutDialog: '<div></div>'
+        };
         SyntaxHighlighter.all();
     }
+     function keyUp(e) {
+       var currKey=0,e=e||event;
+       currKey=e.keyCode||e.which||e.charCode;
+       var keyName = String.fromCharCode(currKey);
+       alert("按键码: " + currKey + " 字符: " + keyName);
+   }
+function keyDown(e){  
+    e.preventDefault();  
+    var currKey=0, e=e||event||window.event;  
+    currKey = e.keyCode||e.which||e.charCode;  
+    if(currKey == 83 && (e.ctrlKey||e.metaKey)){  //CTRL+S
+           submitBtn();//保存
+           e.keyCode = 0; 
+            if (e.preventDefault) {  // firefox
+                e.preventDefault();
+            } else { // other
+                e.returnValue = false;
+            }
+    } 
+}  
+   document.onkeyup = keyDown;
+
+   function getHightType(fileNameTemp){
+       var extNames = fileNameTemp.split(".");
+       if(extNames!=null&&extNames.length>1){
+           var nameExt = extNames[extNames.length-1].toLowerCase();
+           if(nameExt=="log"||nameExt=="bat"||nameExt=="sh"||nameExt=="md"||nameExt=="conf"){
+                return "html";
+           }else if(nameExt=="py"){
+                return "python";
+           }else if(nameExt=="txt"){
+                return "html";
+           }else{
+                return nameExt;
+           }
+       }
+       return "html";
+   }
 </script>
 
 </html>

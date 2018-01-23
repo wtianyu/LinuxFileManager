@@ -5,10 +5,17 @@
   var targetPath;
   var filePath;
   var doType;
+  var doType_go = 2007;
   var reloadPath = window.location.href;
   var pathPre = window.location.href;
   //视频的正则识别
-  var videoTypeReg = "([.mp4]{4}$)|([.avi]{4}$)|([.flv]{4}$)|([.3gp]{4}$)|([.rmvb]{5}$)"
+  var videoTypeReg = ".(mp4|avi|flv|3gp|rmvb)$";
+  var audioTypeReg = ".(mp3|wav)$";
+  //文档的正则识别
+  var officeTypeReg = ".(doc|docx|ppt|pptx|xls|xlsx)$"
+
+  //处理url多/的正则表达式
+  var urlReg = "/[/]+";
 
   var isUsePasswd = true;
   var isLimitAsk = "%E4%B8%B4%E6%97%B6%E6%96%87%E4%BB%B6%E7%9B%AE%E5%BD%95"; //临时文件夹
@@ -16,6 +23,8 @@
   var time;
   var upload_flush_count = 5; //上传速度刷新频率
   var upload_count = 0;
+
+  var dragCount = 0;
 
   if (pathPre.indexOf("path=") > -1) {
       pathPre = pathPre.split("path=")[pathPre.split("path=").length - 1];
@@ -46,7 +55,7 @@
           text: "移动",
           func: function() {
               doType = 2;
-              openFolderDialog();
+              openFolderDialog("移动");
               sourcePath = pathPre + encodeURIComponent("/" + filePath);
           }
       }],
@@ -54,8 +63,9 @@
           text: "复制",
           func: function() {
               doType = 3;
-              openFolderDialog();
+              openFolderDialog("复制");
               sourcePath = pathPre + encodeURIComponent("/" + filePath);
+              console.log(sourcePath);
           }
       }],
       [{
@@ -63,7 +73,10 @@
           func: function() {
               doType = 4;
               sourcePath = pathPre + encodeURIComponent("/" + filePath);
-              var newName = prompt("请输入新文件名");
+              var newName = window.prompt("请输入新文件夹名", filePath);
+              if ($.trim(newName).length < 1) {
+                  return false;
+              }
               if ($.trim(newName).length < 1 || $.trim(newName).indexOf(".") > -1 || $.trim(newName).indexOf("/") > -1) {
                   alert("请输入合法文件名");
                   return false;
@@ -99,9 +112,18 @@
                       //播放视频
                       var videoObj_li = document.getElementById(filePath);
                       videoObj_li.style.width = "150px";
-                      videoObj_li.style.background = "#ffffff";
+                      videoObj_li.style.background = "#FFFFFF";
                       var videoSrc = "http://al.wtianyu.com:3010/filedownload?path=" + isPrettyPhoto(pathPre) + encodeURIComponent("/" + filePath);
                       videoObj_li.innerHTML = "<video width='150px' height='115px' title='" + filePath + "' ondblclick='playVideoFull(this)' controls='controls' src='" + videoSrc + "'  />"
+                  }
+              } else if (filePath.toLocaleLowerCase().match(new RegExp(audioTypeReg))) {
+                  if (confirm("该文件为音频文件，是否进行播放")) {
+                      //播放视频
+                      var audioObj_li = document.getElementById(filePath);
+                      audioObj_li.style.width = "100px";
+                      audioObj_li.style.background = "#FFFFFF";
+                      var audioSrc = "http://al.wtianyu.com:3010/filedownload?path=" + isPrettyPhoto(pathPre) + encodeURIComponent("/" + filePath);
+                      audioObj_li.innerHTML = "<span style='position:absolute;padding:8px;font-size:12px;'>" + filePath + "</span><audio width='150px' height='115px' title='" + filePath + "' ondblclick='playVideoFull(this)' preload='preload' controls='controls' src='" + audioSrc + "'  />"
                   }
               } else {
                   alert("该文件类型不能进行编辑!!!");
@@ -130,7 +152,7 @@
           text: "移动",
           func: function() {
               doType = 2;
-              openFolderDialog();
+              openFolderDialog("移动");
               sourcePath = pathPre + encodeURIComponent("/" + filePath);
           }
       }],
@@ -138,7 +160,7 @@
           text: "复制",
           func: function() {
               doType = 3;
-              openFolderDialog();
+              openFolderDialog("复制");
               sourcePath = pathPre + encodeURIComponent("/" + filePath);
           }
       }],
@@ -147,7 +169,10 @@
           func: function() {
               doType = 4;
               sourcePath = pathPre + encodeURIComponent("/" + filePath);
-              var newName = prompt("请输入新文件名");
+              var newName = prompt("请输入新文件名", filePath);
+              if ($.trim(newName).length < 1) {
+                  return false;
+              }
               if ($.trim(newName).length < 1 || $.trim(newName).indexOf("/") > -1) {
                   alert("请输入合法文件名");
                   return false;
@@ -170,6 +195,13 @@
           }
       }],
       [{
+          text: "文件详情",
+          func: function() {
+              $("#fileDetial").dialog("open");
+              $("#fileDetialContent").html(decodeURIComponent("http://" + dataip + "/filedownload?path=" + isPrettyPhoto(pathPre) + encodeURIComponent("/" + filePath)));
+          }
+      }],
+      [{
           text: "取消",
           func: function() {}
       }]
@@ -185,6 +217,14 @@
           text: "刷新",
           func: function() {
               window.location.reload();
+          }
+      }],
+      [{
+          text: "跳转",
+          func: function() {
+              doType = doType_go; //代表执行跳转功能
+              openFolderDialog("跳转");
+              sourcePath = pathPre;
           }
       }],
       [{
@@ -329,12 +369,23 @@
       // window.location.title = "文件编辑";
       // window.location.href = "http://"+dataip+"/fileView?path=" + pathPre + encodeURIComponent("/" + path);
       if (isForbidAsk(path) || validatePasswd()) {
-          var myWindow = window.open("http://" + dataip + "/fileView?path=" + isPrettyPhoto(pathPre) + encodeURIComponent("/" + path));
+          var completePath = "http://" + dataip + "/fileView?path=" + pathPre + encodeURIComponent("/" + path);
+          console.log(path);
+          if (path.toLocaleLowerCase().match(new RegExp(officeTypeReg))) {
+              completePath = "http://" + dataip + "/filedownload?path=" + isPrettyPhoto(pathPre) + encodeURIComponent("/" + filePath);
+              completePath = decodeURIComponent(completePath);
+              console.log(completePath);
+              window.open("https://view.officeapps.live.com/op/view.aspx?src=" + completePath);
+          } else {
+              var myWindow = window.open(completePath);
+          }
       }
       // myWindow.document.title = "这里写个标题";
   }
 
   function go(path, flag) {
+      path = path.replace(new RegExp(urlReg), "/");
+      pathPre = pathPre.replace(new RegExp(urlReg), "/");
       if (isForbidAsk(path)) {
           if (flag == 2) { //去根目录
               window.location.href = "http://" + dataip + "/filelist?path=" + encodeURIComponent("/");
@@ -342,7 +393,10 @@
           } else if (flag == 3) { //返回上级目录
               pathPre = replaceAll(pathPre, "%2F", "/");
               var pathPreIndex = pathPre.lastIndexOf("/");
-              window.location.href = "http://" + dataip + "/filelist?path=" + encodeURIComponent("/" + pathPre.substring(0, pathPreIndex));
+              window.location.href = "http://" + dataip + "/filelist?path=" + decodeURIComponent("/" + pathPre.substring(0, pathPreIndex));
+              return true;
+          } else if (flag == 4) { //跳转
+              window.location.href = "http://" + dataip + "/filelist?path=" + encodeURIComponent("/" + path);
               return true;
           }
           window.location.href = "http://" + dataip + "/filelist?path=" + isPrettyPhoto(pathPre) + encodeURIComponent("/" + path);
@@ -438,7 +492,8 @@
       $("#searchDialog").dialog("open");
   }
 
-  function openFolderDialog() {
+  function openFolderDialog(file_title) {
+      $("#ui-id-5").html("请选择" + file_title + "目录");
       $("#chooseFolderDialog").dialog("open");
       //请求显示文件系统所有目录
       var xr = new XMLHttpRequest();
@@ -513,7 +568,7 @@
               if (progressSpeed > 1024) {
                   document.getElementById("progressSpeed").innerHTML = (progressSpeed / 1024).toFixed(2) + "M/s";
               } else {
-                  document.getElementById("progressSpeed").innerHTML = progressSpeed + "kb/s";
+                  document.getElementById("progressSpeed").innerHTML = progressSpeed.toFixed(0) + "kb/s";
               }
           }
           console.log("正在上传" + percentComplete.toFixed(2) + "%");
@@ -533,9 +588,13 @@
       document.getElementById("fileType").innerHTML = "";
       document.getElementById("progressSpeed").innerHTML = "";
       if (isDragUploadFile) {
-          setTimeout(function() {
-              $("#uploadDialog").dialog("close");
-          }, 1000);
+          dragCount--;
+          if (dragCount == 0) { //当最后一个文件也上传成功后，关闭窗口
+              setTimeout(function() {
+                  $("#uploadDialog").dialog("close");
+                  window.location.reload();
+              }, 1000);
+          }
       }
 
   }
@@ -549,6 +608,7 @@
   }
 
   function initZtree(json) {
+      console.log(json);
       var zTreeObj;
       var setting;
       setting = {
@@ -570,7 +630,7 @@
       zTreeObj = $.fn.zTree.init($("#folderZtree"), setting, zNodes);
       var treeObj = $.fn.zTree.getZTreeObj("folderZtree");
       pathPre = replaceAll(pathPre, "%2F", "/");
-      pathPre = replaceAll(pathPre, "//", "/");
+      pathPre = pathPre.replace(new RegExp(urlReg), "/");
       pathPre = isPrettyPhoto(pathPre);
       console.log(decodeURIComponent(pathPre));
       var node = treeObj.getNodeByParam("id", decodeURIComponent(pathPre));
@@ -667,10 +727,15 @@
           else if (filename_a.toLocaleLowerCase().match(new RegExp(videoTypeReg))) {
               $(this).parent().css("background", "url(/images/video.jpg) center top no-repeat");
           }
+          //audio图标变更
+          else if (filename_a.toLocaleLowerCase().match(new RegExp(audioTypeReg))) {
+              $(this).parent().css("background", "url(/images/audio.jpg) center top no-repeat");
+          }
       });
   }
 
   function uploadFileDrag(fileDrag) {
+      dragCount++;
       console.log("拖拽上传" + fileDrag.name + "文件,大小" + parseInt(fileDrag.size / 1024) + "kb");
       document.getElementById('fileName').innerHTML = 'Name: ' + fileDrag.name;
       document.getElementById('fileSize').innerHTML = 'Size: ' + parseInt(fileDrag.size / 1024) + "kb";

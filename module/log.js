@@ -24,7 +24,11 @@ function saveLogContent(filePath, req) {
     content += "[" + getClientIp(req) + "] ";
     content += "[" + iplocation + "] ";
     content += "[" + req.method + "] ";
-    content += "[http://" + hostname + ":" + port + "" + decodeURIComponent(req.url) + "] ";
+    try{
+    	content += "[http://" + hostname + ":" + port + "" + decodeURIComponent(req.url) + "] ";
+    }catch (e){
+    	content += "[http://" + hostname + ":" + port + "" + req.url+ "(违法请求url)] ";
+        }
     content += "[" + req.headers['user-agent'] + "]";
     console.log("日志已保存")
     writeStream.write(content);

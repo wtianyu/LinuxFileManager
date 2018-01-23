@@ -1,0 +1,5 @@
+[9/21/2017, 5:10:05 AM] [::ffff:106.75.85.103] [:] [GET] [http://101.132.76.193:3010/] [Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.1 (KHTML, like Gecko) Chrome/21.0.1180.89 Safari/537.1]
+[9/21/2017, 4:30:51 PM] [::ffff:210.13.80.220] [上海市:上海市] [GET] [http://101.132.76.193:3010/filelist?path=/root] [Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36]
+[9/21/2017, 4:30:55 PM] [::ffff:210.13.80.220] [上海市:上海市] [GET] [http://101.132.76.193:3010/filelist?path=/root/蔡莹] [Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36]
+[9/21/2017, 4:31:04 PM] [::ffff:210.13.80.220] [上海市:上海市] [POST] [http://101.132.76.193:3010/uploadFile] [Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36]
+[9/21/2017, 4:31:12 PM] [::ffff:210.13.80.220] [上海市:上海市] [GET] [http://101.132.76.193:3010/filelist?path=/root/蔡莹] [Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.113 Safari/537.36]

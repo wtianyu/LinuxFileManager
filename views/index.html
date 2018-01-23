@@ -170,6 +170,16 @@
     a {
         cursor: pointer;
     }
+    
+    audio {
+        width: 120px;
+        height: 100px;
+        background: #EE82EE;
+    }
+    
+    video {
+        background: #FFFFFF;
+    }
 </style>
 <script>
     $(function() {
@@ -201,7 +211,7 @@
 
 <body>
     <div>
-        <a onclick="go('',2)">根目录</a><a style="margin-left:30px;" onclick="go('',3)">上级菜单</a>
+        <a onclick="go('',2)">根目录</a><a href="javascript:void(0)" style="margin-left:30px;" onclick="go('',3)">上级菜单</a>
     </div>
     <div id="body_div" style="margin-top:10px;">
         <!--文件夹显示效果-->
@@ -270,6 +280,11 @@
         <div id="shellContent"></div>
     </div>
 
+    <!-- 文件详情-->
+    <div id="fileDetial" title="文件详情" style="display: none;overflow-x:hidden">
+        <div id="fileDetialContent" style="overflow-x:hidden;word-wrap: break-word;"></div>
+    </div>
+
     <!-- 文件搜索结果显示-->
     <div id="showSearchFileDialog" title="文件搜索结果" style="display: none">
         <div class="alldom" id="fileDiv_search">
@@ -333,6 +348,19 @@
                 text: "关闭",
                 click: function() {
                     document.getElementById("shellContent").innerText = "";
+                    $(this).dialog("close");
+                }
+            }]
+        });
+
+        $("#fileDetial").dialog({
+            autoOpen: false,
+            width: 400,
+            height: screen.height / 2,
+            buttons: [{
+                text: "关闭",
+                click: function() {
+                    document.getElementById("fileDetialContent").innerText = "";
                     $(this).dialog("close");
                 }
             }]
@@ -406,6 +434,10 @@
             }, {
                 text: "确定",
                 click: function() { //确定
+                    if (doType_go == doType) {
+                        go(targetPath, 4);
+                        return true;
+                    }
                     if (isForbidAsk(isPrettyPhoto(targetPath), 1) || validatePasswd()) {
                         snedOperateShell("shellOperate?sourcePath=" + sourcePath + "&targetPath=" + targetPath + "&doType=" + doType);
                     }
@@ -416,8 +448,9 @@
 
 
         function isCanOpen(pathTemp) {
-            var arrCanOpen = [".txt", ".js", ".java", ".html", ".py", ".bat",
-                ".c", ".c++", ".md", ".log", ".sql"
+            pathTemp = pathTemp.toLowerCase();
+            var arrCanOpen = [".txt", ".js", ".java", ".html", ".py", ".bat",".conf",
+                ".c", ".c++", ".md", ".log", ".sql", ".sh", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx"
             ];
             for (var i = 0; i < arrCanOpen.length; i++) {
                 if (pathTemp.indexOf(arrCanOpen[i]) > -1) {

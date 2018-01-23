@@ -4,25 +4,55 @@ var uploadFile = require("./../module/UploadFile.js"); //文件上传模块
 var process = require("./../module/process.js"); //shell命令执行模块
 var log = require("./../module/log.js"); //shell命令执行模块
 var router = express.Router();
-const basePath = "/home/node/project/ExpressFileManager";
+const basePath = "/home/node/ExpressFileManager";
+
+//处理url多/的正则表达式
+var urlReg = "/[/]+";
 
 //TODO html页面优化
 /* GET home page. */
 router.get('/', function(req, res, next) {
-    res.render('test', { title: 'Express' });
+    saveLog(req);
+    var filepath = "/";
+    var path = req.query["path"];
+    console.log(path)
+    if (path != null && path.length > 1) {
+        filepath = path + "/";
+    }
+    reqIp = getIPAdress() + ":3010";
+    dirlist = getDirList(filepath);
+    filelist = getFileList(filepath);
+    console.log("fileList:" + filelist);
+    console.log("dirlist:" + dirlist);
+
+    //处理文件名显示问题
+    filenamelist = new Array();
+    dirnamelist = new Array();
+    for (var i = 0; i < filelist.length; i++) {
+        var temp = filelist[i].split("/");
+        filenamelist[i] = temp[temp.length - 1];
+    }
+
+    for (var i = 0; i < dirlist.length; i++) {
+        var temp = dirlist[i].split("/");
+        dirnamelist[i] = temp[temp.length - 1];
+    }
+    console.log(filenamelist);
+    console.log(dirnamelist);
+    res.render('index', { dataip: reqIp, filelist: filelist, dirlist: dirlist, dirnamelist: dirnamelist, filenamelist: filenamelist });
 });
 
 router.get('/favicon.ico', function(req, res, next) {});
 
 router.get('/wtiy', function(req, res, next) {
-    reqIp = getIPAdress() + ":3010";
+    reqIp = "http://al.wtianyu.com:3010" //getIPAdress() + ":3010";
     console.log("请连接本机ip：", reqIp);
     res.render('indexdir', { dataip: reqIp });
 });
 
 //下载文件
 router.get('/filedownload', function(req, res, next) {
-   
+
     var filepath = req.query.path;
     downloadFile(filepath, res, req);
 });
@@ -94,11 +124,11 @@ router.get('/getFolderAll', function(req, res, next) {
     res.writeHead(200, { 'Content-Type': 'text/html' });
     var showFoder = "[";
     var filepath = req.query.path;
-    filepath = replaceAll(filepath, "//", "/");
     filepath = "/" + filepath;
-    console.log(filepath);
+    console.log("filepath=" + filepath);
     if (filepath != null) {
         filepath = filepath + "/";
+        filepath = filepath.replace(new RegExp(urlReg), "/");
         //通过filepath分离路径;比如/home/wa/haha将会分解成/home,/home/wa,/home/wa/haha
         var filepathArray = getDirByPath(filepath);
         console.log(filepathArray);
@@ -115,8 +145,12 @@ router.get('/getFolderAll', function(req, res, next) {
 
 function getDirByPath(path) {
     var pathArray = new Array();
-    var count = 0;
+    var count = 1;
     var beginPath = 0;
+    pathArray[0] = "/";
+    if (path == "/") {
+        return pathArray;
+    }
     if (path == null || path == "") {
         return new Array();
     }
@@ -125,7 +159,7 @@ function getDirByPath(path) {
         if (beginPath == -1) {
             break;
         } else {
-            pathArray[count++] = replaceAll(path.substring(0, beginPath) + "/", "//", "/");
+            pathArray[count++] = path.substring(0, beginPath) + "/".replace(new RegExp(urlReg), "/");
         }
     } while (path.indexOf("/", beginPath) > -1);
 
@@ -282,12 +316,20 @@ router.post('/uploadFile', function(req, res) {
 });
 
 
+function isPrettyPhoto(url_prettyPhoto) {
+    if (url_prettyPhoto.indexOf("#prettyPhoto") > -1) {
+        return replaceAll(url_prettyPhoto, "#prettyPhoto", "");
+    } else {
+        return url_prettyPhoto;
+    }
+}
 
 //下载列表
 router.get('/filelist', function(req, res, next) {
     saveLog(req);
     var filepath = "/";
     var path = req.query["path"];
+    path = isPrettyPhoto(path);
     console.log(path)
     if (path != null && path.length > 1) {
         filepath = path + "/";
@@ -417,7 +459,7 @@ function replaceAll(str, sptr1, sptr2) {
         length = sptr2.length;
         begin = flag + sptr1.length;
     }
-    if (length != 0) { //进行过截断
+    if (begin > 0) { //进行过截断
         strTemp += str.substring(begin, str.length);
     }
     return strTemp;
@@ -425,12 +467,12 @@ function replaceAll(str, sptr1, sptr2) {
 
 function getDate() {
     var date = new Date();
-    var time = date.getFullYear() + "-" + (date.getMonth() < 10 ? '0' + (date.getMonth() + 1) : (date.getMonth() + 1)) + "-" + (date.getDate() < 10 ? '0' + date.getDate() : date.getDate());
+    var time = date.getFullYear() + "-" + (date.getMonth() < 9 ? '0' + (date.getMonth() + 1) : (date.getMonth() + 1)) + "-" + (date.getDate() < 10 ? '0' + date.getDate() : date.getDate());
     return time;
 }
 
 function saveLog(req) {
-    log.saveLog("123.1.151.52", 3010, req, basePath + "/Log/" + getDate() + "/", "http_node_file.log");
+    log.saveLog("101.132.76.193", 3010, req, basePath + "/Log/" + getDate() + "/", "http_node_file.log");
 }
 
 module.exports = router;

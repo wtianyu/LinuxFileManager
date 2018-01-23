@@ -25,8 +25,8 @@ app.set('view engine', 'html');
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
-app.use(bodyParser.json({ 'limit': '100000kb' }));
-app.use(bodyParser.urlencoded({ 'limit': '100000kb', extended: false }));
+app.use(bodyParser.json({ 'limit': '5000kb' }));
+app.use(bodyParser.urlencoded({ 'limit': '5000kb', extended: false }));
 app.use(cookieParser());
 
 /*
