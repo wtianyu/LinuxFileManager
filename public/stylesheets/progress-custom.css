@@ -1,0 +1,72 @@
+        #progressbar-custom {
+            position: absolute;
+            top: 100px;
+            height: 10px;
+            width: 500px;
+            border: 1px solid #63B8FF;
+            border-radius: 5px;
+            text-align: center;
+            line-height: 10px;
+            font-size: 0.8em;
+			z-index: 99;
+			right: 0;
+			left: 0;
+			margin: 0 auto;
+        }
+        
+        #progress-custom {
+            position: absolute;
+            /*  border:1px solid;*/
+            height: 100%;
+            width: 0;
+            background: #BFEFFF;
+            border-radius: 5px;
+            z-index: -1;
+        }
+        
+        #progress-custom {
+            background-size: 30px 30px;
+            background-image: -webkit-linear-gradient(-45deg, #63B8FF, #63B8FF 25%, #BFEFFF 25%, #BFEFFF 50%, #63B8FF 50%, #63B8FF 75%, #BFEFFF 75%, #BFEFFF);
+            background-image: -moz-linear-gradient(-45deg, #63B8FF, #63B8FF 25%, #BFEFFF 25%, #BFEFFF 50%, #63B8FF 50%, #63B8FF 75%, #BFEFFF 75%, #BFEFFF);
+            background-image: linear-gradient(-45deg, #63B8FF, #63B8FF 25%, #BFEFFF 25%, #BFEFFF 50%, #63B8FF 50%, #63B8FF 75%, #BFEFFF 75%, #BFEFFF);
+            -webkit-animation: animate 1.5s linear infinite;
+            -moz-animation: animate 1.5s linear infinite;
+            animation: animate 1.5s linear infinite;
+        }
+        
+        @-webkit-keyframes animate {
+            from {
+                background-position: 0 0;
+            }
+            to {
+                background-position: 60px 30px;
+            }
+        }
+        
+        @-moz-keyframes animate {
+            from {
+                background-position: 0 0;
+            }
+            to {
+                background-position: 60px 30px;
+            }
+        }
+        
+        @keyframes animate {
+            from {
+                background-position: 0 0;
+            }
+            to {
+                background-position: 60px 30px;
+            }
+        }
+        /*使用示例
+        <div id="progressbar-custom"><div id='progress-custom'></div><p id='p-custom'></p></div>
+        function progressfn(cent) {
+            var progressbar=document.getElementById("progressbar-custom");
+            progressbar=progressbar.getElementsByTagName("p-custom");
+            progressbar[0].innerHTML=cent+"%";
+            var progress=document.getElementById("progress-custom");
+            progress.style.width=cent+"%";
+        }
+        */

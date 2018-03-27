@@ -4,7 +4,9 @@
 <head>
     <title>linux文件管理系统</title>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <link rel='stylesheet' href='/stylesheets/progress-custom.css' />
+    <script type="text/javascript" src="/javascripts/jquery-1.8.3.js"></script>
+    <!-- <link rel='stylesheet' href='/stylesheets/style.css' />
     <link rel='stylesheet' href='/stylesheets/load.css' />
     <link rel='stylesheet' href='/stylesheets/jquery-ui-1.9.2.custom.css' />
     <link rel='stylesheet' href='/stylesheets/zTreeStyle.css' />
@@ -14,7 +16,8 @@
     <script type="text/javascript" src="/javascripts/jquery-smartMenu.js"></script>
     <script type="text/javascript" src="/javascripts/jquery.ztree.core.js"></script>
     <link type="text/css" href="/stylesheets/prettyPhoto.css" rel="stylesheet" />
-    <script type="text/javascript" src="/javascripts/jquery.prettyphoto.js"></script>
+    <script type="text/javascript" src="/javascripts/jquery.prettyphoto.js"></script>-->
+
 </head>
 <style type="text/css">
     * {
@@ -180,9 +183,97 @@
     video {
         background: #FFFFFF;
     }
+    
+    #progressbar-custom-container {
+        position: absolute;
+        z-index: 22;
+        margin: auto;
+        top: 0;
+        right: 0;
+        left: 0;
+        width: auto;
+        height: 100%;
+        margin: 0 auto;
+    }
 </style>
 <script>
-    $(function() {
+    //初始化res加载进度条
+    function initResLoad() {
+        var script_arr = ['/stylesheets/style.css', '/stylesheets/load.css', '/stylesheets/jquery-ui-1.9.2.custom.css',
+            '/stylesheets/zTreeStyle.css', '/javascripts/progress_prefixfree.min.js',
+            '/javascripts/jquery-ui-1.9.2.custom.min.js', '/javascripts/jquery-smartMenu.js', '/javascripts/jquery.ztree.core.js',
+            '/stylesheets/prettyPhoto.css', '/javascripts/jquery.prettyphoto.js'
+        ];
+        var nums = script_arr.length;
+        var start = 0;
+        for (var i in script_arr) {
+            //判断js或者css
+            var res;
+            if (script_arr[i].substring(script_arr[i].length - 3, script_arr[i].length).toLocaleLowerCase() == ".js") {
+                res = document.createElement('script');
+                res.type = 'text/javascript';
+                res.src = script_arr[i]; // + "?t=" + new Date().getMilliseconds();;
+            } else if (script_arr[i].substring(script_arr[i].length - 4, script_arr[i].length).toLocaleLowerCase() == ".css") {
+                res = document.createElement('link');
+                res.type = "text/css";
+                res.rel = "stylesheet";
+                res.media = 'all';
+                res.href = script_arr[i]; // + "?t=" + new Date().getMilliseconds();;
+            }
+            document.head.appendChild(res);
+            res.onload = function() {
+                start++;
+                var current = start / script_arr.length * 100;
+                progressfn(current, start, script_arr.length);
+                if (start == nums) {
+                    console.log('全部加载完成');
+                    loadComplete();
+                }
+            };
+            res.onerror = function() {
+                start++;
+                console.log(script_arr[i] + '失败');
+                if (start == nums) {
+                    console.log('全部加载完成');
+                    loadComplete();
+                }
+            }
+        }
+    }
+
+    //资源加载完成调用方法
+    function loadComplete() {
+        var res2 = document.createElement('script');
+        res2.type = 'text/javascript';
+        res2.src = '/javascripts/index_main.js';
+        document.head.appendChild(res2);
+        res2.onload = function() {
+            document.getElementById("progressbar-custom-container").style.display = "none";
+            document.getElementById("file_express_content").style.display = "";
+            initFileUpload();
+            init();
+        };
+        res2.onerror = function() {
+            alert("index_main.js文件初始化失败");
+        }
+    }
+
+    /**
+     *cent进度
+     *currentCount当前数
+     *totalCount总数
+     */
+    function progressfn(cent, currentCount, totalCount) {
+        cent = parseInt(cent);
+        var progressbar = document.getElementById("progressbar-custom");
+        progressbar = progressbar.getElementsByTagName("p");
+        progressbar[0].innerHTML = cent + "%" + "              " + currentCount + "/" + totalCount;
+        var progress = document.getElementById("progress-custom");
+        progress.style.width = cent + "%";
+    }
+
+    //初始化文件上传显示
+    function initFileUpload() {
         $("input[type=file]").change(function() {
             document.getElementById("progressNumber").value = "0";
             document.getElementById("progressNumber").style.display = "none";
@@ -206,250 +297,135 @@
                 $(this).parents(".uploader").find(".filename").val("请选择文件...");
             }
         });
-    });
+    }
 </script>
 
-<body>
-    <div>
-        <a onclick="go('',2)">根目录</a><a href="javascript:void(0)" style="margin-left:30px;" onclick="go('',3)">上级菜单</a>
-    </div>
-    <div id="body_div" style="margin-top:10px;">
-        <!--文件夹显示效果-->
-        <div class="alldom" id="folderDiv">
-            <ul class="ul">
-                <%for(var i=0; i<= dirlist.length-1; i++){%>
-                    <li class="folder" title="<%= dirnamelist[i] %>" onclick="go('<%= dirnamelist[i] %>')" onmouseover="mouserover('<%= dirnamelist[i] %>')" style="cursor: pointer">
-                        <a title="<%= dirnamelist[i] %>" href="javascript:void(0)" class="folder">
-                            <%= dirnamelist[i] %>
-                        </a>
-                    </li>
-                    <!--<a href="http://<%= dataip %>/filelist?path=<%= dirlist[i] %>"><%= dirlist[i] %></a><br/>-->
-                    <%}%>
-            </ul>
+<body onload="initResLoad()">
+    <div id="progressbar-custom-container">
+        <div id="progressbar-custom">
+            <div id='progress-custom'></div>
+            <p></p>
         </div>
+    </div>
 
-
-        <!--文件显示效果-->
-        <div class="alldom" id="fileDiv">
-            <ul class="ul">
-                <%for(var i=0; i<= filelist.length-1; i++){
-                if(isImg(filelist[i])){
-                %>
-                    <!--<input type="button" value=<%= filelist[i]%>>-->
-                    <li class="file" style="background:#ffffff" name="li_image" title="<%= filenamelist[i] %>" onmouseover="mouserover('<%= filenamelist[i] %>')">
-                        <a style="width:100%;height:100%;margin-left:0px" href="" name="a_image" rel="prettyPhoto[]">
-                        <img name="img_image" src="/images/loading_img.jpg" id="<%= filenamelist[i] %>" width="100%" height="100%" />
-                    </a>
-                    </li>
-                    <%}else{%>
-                        <li class="file" id="<%= filenamelist[i] %>" title="<%= filenamelist[i] %>" onmouseover="mouserover('<%= filenamelist[i] %>')">
-                            <a name="file_a" title="<%= filenamelist[i] %>" style="cursor: pointer" href="javascript:void(0)" onclick="downl('<%= filenamelist[i] %>')" class="folder">
-                                <%= filenamelist[i] %>
+    <div id="file_express_content" style="display:none">
+        <div>
+            <a onclick="go('',2)">根目录</a><a href="javascript:void(0)" style="margin-left:30px;" onclick="go('',3)">上级菜单</a>
+        </div>
+        <div id="body_div" style="margin-top:10px;">
+            <!--文件夹显示效果-->
+            <div class="alldom" id="folderDiv">
+                <ul class="ul">
+                    <%for(var i=0; i<= dirlist.length-1; i++){%>
+                        <li class="folder" title="<%= dirnamelist[i] %>" onclick="go('<%= dirnamelist[i] %>')" onmouseover="mouserover('<%= dirnamelist[i] %>')" style="cursor: pointer">
+                            <a title="<%= dirnamelist[i] %>" href="javascript:void(0)" class="folder">
+                                <%= dirnamelist[i] %>
                             </a>
                         </li>
-                        <%}}%>
-            </ul>
-        </div>
-    </div>
+                        <!--<a href="http://<%= dataip %>/filelist?path=<%= dirlist[i] %>"><%= dirlist[i] %></a><br/>-->
+                        <%}%>
+                </ul>
+            </div>
 
-    <!--文件上传dialog-->
-    <div id="uploadDialog" title="文件上传" class="uploader" style="padding-left: 20px;display: none">
-        <form id="upload_submitForm" action="uploadFile" method="post" enctype='multipart/form-data'>
-            <input type="file" id="uploadFile" name="uploadFile" value="上传文件"><br/>
-            <p id="filedesc"></p>
-            <p id="fileName"></p>
-            <p id="fileSize"></p>
-            <p id="fileType"></p>
-            <progress id="progressNumber" value="0" max="100" style="display: none"></progress><span id="progress_span"></span>
-            <div id="progressSpeed"></div>
-            <div id="download"></div>
-            <input type="hidden" name="dirpath" id="dirpath">
-            <input type="button" style="margin-top: 10px" id="uploadFileBtn" onclick="validate()" value=" 上传文件 ">
-        </form>
-    </div>
 
-    <!-- shell命令使用-->
-    <div id="shellDialog" title="系统内存使用情况" style="display: none">
-        <div class="spinner" id="spinner">
-            <div class="rect1"></div>
-            <div class="rect2"></div>
-            <div class="rect3"></div>
-            <div class="rect4"></div>
-            <div class="rect5"></div>
+            <!--文件显示效果-->
+            <div class="alldom" id="fileDiv">
+                <ul class="ul">
+                    <%for(var i=0; i<= filelist.length-1; i++){
+                if(isImg(filelist[i])){
+                %>
+                        <!--<input type="button" value=<%= filelist[i]%>>-->
+                        <li class="file" style="background:#ffffff" name="li_image" title="<%= filenamelist[i] %>" onmouseover="mouserover('<%= filenamelist[i] %>')">
+                            <a style="width:100%;height:100%;margin-left:0px" href="" name="a_image" rel="prettyPhoto[]">
+                        <img name="img_image" src="/images/loading_img.jpg" id="<%= filenamelist[i] %>" width="100%" height="100%" />
+                    </a>
+                        </li>
+                        <%}else{%>
+                            <li class="file" id="<%= filenamelist[i] %>" title="<%= filenamelist[i] %>" onmouseover="mouserover('<%= filenamelist[i] %>')">
+                                <a name="file_a" title="<%= filenamelist[i] %>" style="cursor: pointer" href="javascript:void(0)" onclick="downl('<%= filenamelist[i] %>')" class="folder">
+                                    <%= filenamelist[i] %>
+                                </a>
+                            </li>
+                            <%}}%>
+                </ul>
+            </div>
         </div>
-        <div id="shellContent"></div>
-    </div>
 
-    <!-- 文件详情-->
-    <div id="fileDetial" title="文件详情" style="display: none;overflow-x:hidden">
-        <div id="fileDetialContent" style="overflow-x:hidden;word-wrap: break-word;"></div>
-    </div>
+        <!--文件上传dialog-->
+        <div id="uploadDialog" title="文件上传" class="uploader" style="padding-left: 20px;display: none">
+            <form id="upload_submitForm" action="uploadFile" method="post" enctype='multipart/form-data'>
+                <input type="file" id="uploadFile" name="uploadFile" value="上传文件"><br/>
+                <p id="filedesc"></p>
+                <p id="fileName"></p>
+                <p id="fileSize"></p>
+                <p id="fileType"></p>
+                <progress id="progressNumber" value="0" max="100" style="display: none"></progress><span id="progress_span"></span>
+                <div id="progressSpeed"></div>
+                <div id="download"></div>
+                <input type="hidden" name="dirpath" id="dirpath">
+                <input type="button" style="margin-top: 10px" id="uploadFileBtn" onclick="validate()" value=" 上传文件 ">
+            </form>
+        </div>
 
-    <!-- 文件搜索结果显示-->
-    <div id="showSearchFileDialog" title="文件搜索结果" style="display: none">
-        <div class="alldom" id="fileDiv_search">
-            <ul id="showSearchFileUL">
-            </ul>
+        <!-- shell命令使用-->
+        <div id="shellDialog" title="系统内存使用情况" style="display: none">
+            <div class="spinner" id="spinner">
+                <div class="rect1"></div>
+                <div class="rect2"></div>
+                <div class="rect3"></div>
+                <div class="rect4"></div>
+                <div class="rect5"></div>
+            </div>
+            <div id="shellContent"></div>
         </div>
-    </div>
 
-    <!-- 选择文件目录dialog -->
-    <div id="chooseFolderDialog" title="请选择移动目录" style="display: none">
-        <div>
-            <ul id="folderZtree" class="ztree"></ul>
+        <!-- 文件详情-->
+        <div id="fileDetial" title="文件详情" style="display: none;overflow-x:hidden">
+            <div id="fileDetialContent" style="overflow-x:hidden;word-wrap: break-word;"></div>
         </div>
-    </div>
-    <!-- 搜索文件dialog -->
-    <div id="searchDialog" title="请输入要搜索的文件或内容" style="display: none">
-        <div class="spinner" id="spinnerSearch">
-            <div class="rect1"></div>
-            <div class="rect2"></div>
-            <div class="rect3"></div>
-            <div class="rect4"></div>
-            <div class="rect5"></div>
+
+        <!-- 文件搜索结果显示-->
+        <div id="showSearchFileDialog" title="文件搜索结果" style="display: none">
+            <div class="alldom" id="fileDiv_search">
+                <ul id="showSearchFileUL">
+                </ul>
+            </div>
         </div>
-        <div id="searchDiv">
-            <select style="width:48%" id="searchFile" onchange="changeInPutSearchName()">
+
+        <!-- 选择文件目录dialog -->
+        <div id="chooseFolderDialog" title="请选择移动目录" style="display: none">
+            <div>
+                <ul id="folderZtree" class="ztree"></ul>
+            </div>
+        </div>
+        <!-- 搜索文件dialog -->
+        <div id="searchDialog" title="请输入要搜索的文件或内容" style="display: none">
+            <div class="spinner" id="spinnerSearch">
+                <div class="rect1"></div>
+                <div class="rect2"></div>
+                <div class="rect3"></div>
+                <div class="rect4"></div>
+                <div class="rect5"></div>
+            </div>
+            <div id="searchDiv">
+                <select style="width:48%" id="searchFile" onchange="changeInPutSearchName()">
             <option value="1">按文件名搜索</option>
             <option value="2">按文件内容</option>
         </select>
-            <select style="width:48%" id="searchRange">
+                <select style="width:48%" id="searchRange">
             <option value="1">全局搜索</option>
             <option value="2">当前目录下搜索</option>
         </select>
-            <input id="searchNameIP" style="width:96%;margin-top:8px" />
-            <textarea id="searchNameTT" rows="5" style="display:none;width:96%;margin-top:8px"></textarea>
+                <input id="searchNameIP" style="width:96%;margin-top:8px" />
+                <textarea id="searchNameTT" rows="5" style="display:none;width:96%;margin-top:8px"></textarea>
+            </div>
         </div>
     </div>
-
-    <script type="text/javascript" src="/javascripts/index_main.js"></script>
+    <!-- <script type="text/javascript" src="/javascripts/index_main.js"></script>-->
     <script>
-        $("#uploadDialog").dialog({
-            autoOpen: false,
-            width: 400,
-            height: screen.height / 2,
-            buttons: [{
-                text: "关闭",
-                click: function() {
-                    document.getElementById("upload_submitForm").reset();
-                    document.getElementById("fileName").innerHTML = "";
-                    document.getElementById("fileSize").innerHTML = "";
-                    document.getElementById("fileType").innerHTML = "";
-                    $(this).dialog("close");
-                }
-            }]
-        });
-
-        $("#shellDialog").dialog({
-            autoOpen: false,
-            width: 400,
-            height: screen.height / 2,
-            buttons: [{
-                text: "关闭",
-                click: function() {
-                    document.getElementById("shellContent").innerText = "";
-                    $(this).dialog("close");
-                }
-            }]
-        });
-
-        $("#fileDetial").dialog({
-            autoOpen: false,
-            width: 400,
-            height: screen.height / 2,
-            buttons: [{
-                text: "关闭",
-                click: function() {
-                    document.getElementById("fileDetialContent").innerText = "";
-                    $(this).dialog("close");
-                }
-            }]
-        });
-
-        $("#searchDialog").dialog({
-            autoOpen: false,
-            width: 300,
-            height: screen.height * 3 / 5,
-            buttons: [{
-                text: "关闭",
-                click: function() {
-                    $(this).dialog("close");
-                }
-            }, {
-                text: "确定",
-                click: function() { //确定
-                    document.getElementById("spinnerSearch").style.display = "";
-                    document.getElementById("searchDiv").style.display = "none";
-                    var xhr = new XMLHttpRequest();
-                    xhr.open("POST", "searchFile", true); //修改成自己的接口
-                    // xhr.setRequestHeader("Content-Type", "application/form-data");
-                    xhr.setRequestHeader("context-type", "text/xml;charset=utf-8");
-                    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                    xhr.onreadystatechange = function() {
-                        if (xhr.readyState == 4) {
-                            if (xhr.status == 200) {
-                                document.getElementById("spinnerSearch").style.display = "none";
-                                document.getElementById("searchDiv").style.display = "";
-                                // alert(xhr.responseText)
-                                var filelistSearch = xhr.responseText.split("\n");
-                                if (filelistSearch.length > 1) {
-                                    $("#showSearchFileDialog").dialog("open");
-                                    showSearchFile(filelistSearch);
-                                } else {
-                                    alert("没有搜索到对应文件");
-                                }
-                            }
-                        }
-                    }
-                    xhr.send("searchFile=" + document.getElementById('searchFile').value +
-                        "&&searchRange=" + document.getElementById('searchRange').value +
-                        "&&searchNameIP=" + document.getElementById('searchNameIP').value +
-                        "&&searchNameTT=" + document.getElementById('searchNameTT').value +
-                        "&&sourcePath=" + pathPre + "/");
-                }
-            }]
-        });
-
-        $("#showSearchFileDialog").dialog({
-            autoOpen: false,
-            width: screen.width * 3 / 5,
-            height: screen.height * 3 / 5,
-            buttons: [{
-                text: "关闭",
-                click: function() {
-                    $(this).dialog("close");
-                }
-            }]
-        });
-
-        $("#chooseFolderDialog").dialog({
-            autoOpen: false,
-            width: 300,
-            height: screen.height * 3 / 5,
-            buttons: [{
-                text: "关闭",
-                click: function() {
-                    $(this).dialog("close");
-                }
-            }, {
-                text: "确定",
-                click: function() { //确定
-                    if (doType_go == doType) {
-                        go(targetPath, 4);
-                        return true;
-                    }
-                    if (isForbidAsk(isPrettyPhoto(targetPath), 1) || validatePasswd()) {
-                        snedOperateShell("shellOperate?sourcePath=" + sourcePath + "&targetPath=" + targetPath + "&doType=" + doType);
-                    }
-                }
-            }]
-        });
-
-
-
         function isCanOpen(pathTemp) {
             pathTemp = pathTemp.toLowerCase();
-            var arrCanOpen = [".txt", ".js", ".java", ".html", ".py", ".bat",".conf",
+            var arrCanOpen = [".txt", ".js", ".java", ".html", ".py", ".bat", ".conf",
                 ".c", ".c++", ".md", ".log", ".sql", ".sh", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx"
             ];
             for (var i = 0; i < arrCanOpen.length; i++) {
@@ -483,7 +459,6 @@
             }
             return false;
         }
-        init();
 
         function init() {
             //改变文件图标
@@ -543,6 +518,128 @@
                     document.getElementById('filedesc').innerHTML = '文件总个数: ' + fileListDrag.length + "个";
                     uploadFileDrag(fileListDrag[i]);
                 }
+            });
+
+            //初始化一些数据
+            $("#uploadDialog").dialog({
+                autoOpen: false,
+                width: 400,
+                height: screen.height / 2,
+                buttons: [{
+                    text: "关闭",
+                    click: function() {
+                        document.getElementById("upload_submitForm").reset();
+                        document.getElementById("fileName").innerHTML = "";
+                        document.getElementById("fileSize").innerHTML = "";
+                        document.getElementById("fileType").innerHTML = "";
+                        $(this).dialog("close");
+                    }
+                }]
+            });
+
+            $("#shellDialog").dialog({
+                autoOpen: false,
+                width: 400,
+                height: screen.height / 2,
+                buttons: [{
+                    text: "关闭",
+                    click: function() {
+                        document.getElementById("shellContent").innerText = "";
+                        $(this).dialog("close");
+                    }
+                }]
+            });
+
+            $("#fileDetial").dialog({
+                autoOpen: false,
+                width: 400,
+                height: screen.height / 2,
+                buttons: [{
+                    text: "关闭",
+                    click: function() {
+                        document.getElementById("fileDetialContent").innerText = "";
+                        $(this).dialog("close");
+                    }
+                }]
+            });
+
+            $("#searchDialog").dialog({
+                autoOpen: false,
+                width: 300,
+                height: screen.height * 3 / 5,
+                buttons: [{
+                    text: "关闭",
+                    click: function() {
+                        $(this).dialog("close");
+                    }
+                }, {
+                    text: "确定",
+                    click: function() { //确定
+                        document.getElementById("spinnerSearch").style.display = "";
+                        document.getElementById("searchDiv").style.display = "none";
+                        var xhr = new XMLHttpRequest();
+                        xhr.open("POST", "searchFile", true); //修改成自己的接口
+                        // xhr.setRequestHeader("Content-Type", "application/form-data");
+                        xhr.setRequestHeader("context-type", "text/xml;charset=utf-8");
+                        xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                        xhr.onreadystatechange = function() {
+                            if (xhr.readyState == 4) {
+                                if (xhr.status == 200) {
+                                    document.getElementById("spinnerSearch").style.display = "none";
+                                    document.getElementById("searchDiv").style.display = "";
+                                    // alert(xhr.responseText)
+                                    var filelistSearch = xhr.responseText.split("\n");
+                                    if (filelistSearch.length > 1) {
+                                        $("#showSearchFileDialog").dialog("open");
+                                        showSearchFile(filelistSearch);
+                                    } else {
+                                        alert("没有搜索到对应文件");
+                                    }
+                                }
+                            }
+                        }
+                        xhr.send("searchFile=" + document.getElementById('searchFile').value +
+                            "&&searchRange=" + document.getElementById('searchRange').value +
+                            "&&searchNameIP=" + document.getElementById('searchNameIP').value +
+                            "&&searchNameTT=" + document.getElementById('searchNameTT').value +
+                            "&&sourcePath=" + pathPre + "/");
+                    }
+                }]
+            });
+
+            $("#showSearchFileDialog").dialog({
+                autoOpen: false,
+                width: screen.width * 3 / 5,
+                height: screen.height * 3 / 5,
+                buttons: [{
+                    text: "关闭",
+                    click: function() {
+                        $(this).dialog("close");
+                    }
+                }]
+            });
+
+            $("#chooseFolderDialog").dialog({
+                autoOpen: false,
+                width: 300,
+                height: screen.height * 3 / 5,
+                buttons: [{
+                    text: "关闭",
+                    click: function() {
+                        $(this).dialog("close");
+                    }
+                }, {
+                    text: "确定",
+                    click: function() { //确定
+                        if (doType_go == doType) {
+                            go(targetPath, 4);
+                            return true;
+                        }
+                        if (isForbidAsk(isPrettyPhoto(targetPath), 1) || validatePasswd()) {
+                            snedOperateShell("shellOperate?sourcePath=" + sourcePath + "&targetPath=" + targetPath + "&doType=" + doType);
+                        }
+                    }
+                }]
             });
         }
     </script>

@@ -2,12 +2,14 @@
 <html xmlns:mudoo>
 
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <script language="javascript" src="/javascripts/jquery-3.2.1.js"></script>
-    <link href="/stylesheets/index_q_a.css" rel="stylesheet">
     <title>编辑文件</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <link rel='stylesheet' href='/stylesheets/progress-custom.css' />
+    <script language="javascript" src="/javascripts/jquery-3.2.1.js"></script>
+    <script type="text/javascript" src="/syntaxhighlighter-scripts/shCore.js"></script>
+    <!--<link href="/stylesheets/index_q_a.css" rel="stylesheet">
     <script language="javascript" src="/javascripts/jquery.form.js"></script>
-    <!--代码高亮-->
+    代码高亮
     <script type="text/javascript" src="/syntaxhighlighter-scripts/shCore.js"></script>
     <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushBash.js"></script>
     <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushCss.js"></script>
@@ -23,11 +25,104 @@
     <script type="text/javascript" src="/syntaxhighlighter-scripts/shBrushPerl.js"></script>
     <link type="text/css" rel="stylesheet" href="/syntaxhighlighter-styles/shCore.css" />
     <link type="text/css" rel="stylesheet" href="/syntaxhighlighter-styles/shThemeDefault.css" />
+    -->
 
+    <style>
+        #progressbar-custom-container {
+            position: absolute;
+            z-index: 22;
+            margin: auto;
+            top: 0;
+            right: 0;
+            left: 0;
+            width: auto;
+            height: 100%;
+            margin: 0 auto;
+        }
+    </style>
 </head>
+<script>
+    //初始化res加载进度条
+    function initResLoad() {
+        var script_arr = ['/stylesheets/index_q_a.css', '/javascripts/jquery.form.js',
+            '/syntaxhighlighter-scripts/shBrushBash.js', '/syntaxhighlighter-scripts/shBrushCss.js',
+            '/syntaxhighlighter-scripts/shBrushCSharp.js', '/syntaxhighlighter-scripts/shBrushJScript.js', '/syntaxhighlighter-scripts/shBrushPhp.js',
+            '/syntaxhighlighter-scripts/shBrushPlain.js', '/syntaxhighlighter-scripts/shBrushPython.js',
+            '/syntaxhighlighter-scripts/shBrushJava.js', '/syntaxhighlighter-scripts/shBrushScala.js',
+            '/syntaxhighlighter-scripts/shBrushSql.js', '/syntaxhighlighter-scripts/shBrushXml.js',
+            '/syntaxhighlighter-scripts/shBrushPerl.js', '/syntaxhighlighter-styles/shCore.css',
+            '/syntaxhighlighter-styles/shThemeDefault.css'
+        ];
+        var nums = script_arr.length;
+        var start = 0;
+        for (var i in script_arr) {
+            //判断js或者css
+            var res;
+            if (script_arr[i].substring(script_arr[i].length - 3, script_arr[i].length).toLocaleLowerCase() == ".js") {
+                res = document.createElement('script');
+                res.type = 'text/javascript';
+                res.src = script_arr[i]; // + "?t=" + new Date().getMilliseconds();;
+            } else if (script_arr[i].substring(script_arr[i].length - 4, script_arr[i].length).toLocaleLowerCase() == ".css") {
+                res = document.createElement('link');
+                res.type = "text/css";
+                res.rel = "stylesheet";
+                res.media = 'all';
+                res.href = script_arr[i]; // + "?t=" + new Date().getMilliseconds();;
+            }
+            document.head.appendChild(res);
+            res.onload = function() {
+                start++;
+                var current = start / script_arr.length * 100;
+                progressfn(current, start, script_arr.length);
+                if (start == nums) {
+                    console.log('全部加载完成');
+                    loadComplete();
+                }
+            };
+            res.onerror = function() {
+                start++;
+                console.log(script_arr[i] + '失败');
+                if (start == nums) {
+                    console.log('全部加载完成');
+                    loadComplete();
+                }
+            }
+        }
+    }
 
-<body>
-    <div class="case">
+    //资源加载完成调用方法
+    function loadComplete() {
+        document.getElementById("progressbar-custom-container").style.display = "none";
+        document.getElementById("case").style.display = "";
+        //高亮模式初始化
+        initSyntaxHighlighter();
+        //异步读取文件内容
+        showHtml();
+    }
+
+    /**
+     *cent进度
+     *currentCount当前数
+     *totalCount总数
+     */
+    function progressfn(cent, currentCount, totalCount) {
+        cent = parseInt(cent);
+        var progressbar = document.getElementById("progressbar-custom");
+        progressbar = progressbar.getElementsByTagName("p");
+        progressbar[0].innerHTML = cent + "%" + "              " + currentCount + "/" + totalCount;
+        var progress = document.getElementById("progress-custom");
+        progress.style.width = cent + "%";
+    }
+</script>
+
+<body onload="initResLoad()">
+    <div id="progressbar-custom-container">
+        <div id="progressbar-custom">
+            <div id='progress-custom'></div>
+            <p></p>
+        </div>
+    </div>
+    <div class="case" id="case" style="display:none">
         <form action="/saveFileHtml" method="post" id="saveFileHtmlForm">
             <input type="hidden" name="filepath" id="filepath" value="<%=filepath%>">
             <div class="title" style="height:32px;font-size:16px;margin-bottom: 0.5em;"><img class="r" style="cursor:pointer;" onclick="closeEditHtml()" src="/images/close_file.png"><img class="r" style="cursor:pointer;" onclick="submitBtn()" src="/images/save_file.png">文件内容<span id="isSave" style="color:#FF83FA;font-size:12px;"><span></div>
@@ -35,25 +130,30 @@
             </div>-->
             <textarea  id="data_textArea" onkeyup="isNoSave()" onblur="dataTextAreaBlur()" name="data_textArea" style="min-width:98%;min-height:500px;border:solid 1px #DBDBDB;margin-top:10px;display:none">
             </textarea>
-            <div id="data_div" ondblclick="dataDivDB()">
-
+            <div id="data_div" contenteditable="true" oninput="changeContent()" ondblclick="dataDivDB()">
+            </div>
+            <div id="data_div_temp" style="display:none">
             </div>
         </form>
     </div>
 </body>
 <script>
     var hightType = "java";
-    //高亮模式初始化
-     initSyntaxHighlighter();
-    //异步读取文件内容
-    showHtml();
 
     function isNoSave(){
         $("#isSave").text("[未保存]");
     }
 
+    function changeContent(){
+        isNoSave();
+        $("#data_div_temp").html($("#data_div").html());
+        $("#data_div_temp").html(replaceAllNew($("#data_div_temp").html(),"</div>","</div>\n"));
+        $("#data_textArea").text($("#data_div_temp").text());
+    }
+
     //切换为编辑状态
     function dataDivDB(){
+        return false;
         $("#data_textArea").css("display","");
         $("#data_div").css("display","none");
         $("#data_textArea").focus();
@@ -125,8 +225,8 @@
         SyntaxHighlighter.defaults['toolbar'] = false; //去掉右上角问号图标
         SyntaxHighlighter.defaults['collapse'] = false;//是否折叠代码
         SyntaxHighlighter.defaults['gutter'] = false;//是否显示行号
-        SyntaxHighlighter.defaults['title'] = "双击修改文件内容";//标题
-        //SyntaxHighlighter.defaults['quick-code'] = false;//双击复制粘贴
+        SyntaxHighlighter.defaults['title'] = "";//标题
+        SyntaxHighlighter.defaults['quick-code'] = false;//双击复制粘贴
         SyntaxHighlighter.defaults['auto-links'] = false;//自动生成链接
         SyntaxHighlighter.config.tagName = 'pre'; //可以更改解析的默认Tag。
          SyntaxHighlighter.config.strings = {
@@ -181,6 +281,11 @@ function keyDown(e){
        }
        return "html";
    }
+
+
+   function replaceAllNew(str, sptr1, sptr2){
+    return str.replace(new RegExp(sptr1, "g"),sptr2);
+}
 </script>
 
 </html>

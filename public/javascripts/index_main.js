@@ -118,7 +118,7 @@
                   }
               } else if (filePath.toLocaleLowerCase().match(new RegExp(audioTypeReg))) {
                   if (confirm("该文件为音频文件，是否进行播放")) {
-                      //播放视频
+                      //播放音频
                       var audioObj_li = document.getElementById(filePath);
                       audioObj_li.style.width = "100px";
                       audioObj_li.style.background = "#FFFFFF";
